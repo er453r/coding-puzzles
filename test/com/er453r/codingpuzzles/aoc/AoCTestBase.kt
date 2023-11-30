@@ -1,6 +1,7 @@
 package com.er453r.codingpuzzles.aoc
 
 import com.er453r.codingpuzzles.utils.aocTest
+import org.junit.Assume
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
@@ -9,7 +10,7 @@ import org.junit.runners.MethodSorters
 abstract class AoCTestBase<T>(
     val year: Int,
     val day: Int,
-    val testTarget1: T,
+    val testTarget1: T?,
     val testTarget2: T?,
     val puzzleTarget1: T?,
     val puzzleTarget2: T?,
@@ -19,6 +20,8 @@ abstract class AoCTestBase<T>(
 
     @Test
     fun `Part 1 - test data`() {
+        Assume.assumeTrue(testTarget1 != null)
+
         aocTest(
             year = year,
             day = day,
@@ -30,6 +33,8 @@ abstract class AoCTestBase<T>(
 
     @Test
     fun `Part 1 - puzzle data`() {
+        Assume.assumeTrue(testTarget1 != null)
+
         aocTest(
             year = year,
             day = day,
@@ -41,6 +46,8 @@ abstract class AoCTestBase<T>(
 
     @Test
     fun `Part 2 - test data`() {
+        Assume.assumeTrue(testTarget2 != null)
+
         aocTest(
             year = year,
             day = day,
@@ -52,6 +59,8 @@ abstract class AoCTestBase<T>(
 
     @Test
     fun `Part 2 - puzzle data`() {
+        Assume.assumeTrue(testTarget2 != null)
+
         aocTest(
             year = year,
             day = day,

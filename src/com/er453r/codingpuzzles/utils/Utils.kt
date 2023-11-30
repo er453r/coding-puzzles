@@ -186,7 +186,7 @@ fun <Node> aStar(
     return emptyList()
 }
 
-fun List<String>.separateByBlank(): List<List<String>> {
+fun List<String>.split(): List<List<String>> {
     val result = mutableListOf<List<String>>()
     var currentList = mutableListOf<String>()
 

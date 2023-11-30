@@ -1,38 +1,25 @@
+@file:Suppress("SimplifiableCallChain")
+
 package com.er453r.codingpuzzles.aoc.aoc2022
 
 import com.er453r.codingpuzzles.aoc.AoCTestBase
+import com.er453r.codingpuzzles.utils.split
 
 class Day01 : AoCTestBase<Int>(
     year = 2022,
     day = 1,
     testTarget1 = 24000,
-    testTarget2 = 45000,
     puzzleTarget1 = 66719,
+    testTarget2 = 45000,
     puzzleTarget2 = 198551,
 ) {
-    private fun sums(input: List<String>): List<Int> {
-        val sums = mutableListOf<Int>()
-        var sum = 0
+    override fun part1(input: List<String>) = input.split()
+        .map { it.sumOf { n -> n.toInt() } }
+        .max()
 
-        input.forEachIndexed { index, value ->
-            if (value.isNotBlank())
-                sum += value.toInt()
-
-            if (value.isBlank() || input.size - 1 == index) {
-                sums.add(sum)
-
-                sum = 0
-            }
-        }
-
-        return sums
-    }
-
-    override fun part1(input: List<String>): Int {
-        return sums(input).max()
-    }
-
-    override fun part2(input: List<String>): Int {
-        return sums(input).sorted().takeLast(3).sum()
-    }
+    override fun part2(input: List<String>) = input.split()
+        .map { it.sumOf { n -> n.toInt() } }
+        .sorted()
+        .takeLast(3)
+        .sum()
 }

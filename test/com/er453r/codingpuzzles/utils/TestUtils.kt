@@ -1,15 +1,26 @@
 package com.er453r.codingpuzzles.utils
 
+import java.io.File
+
+fun <T> assertEquals(value: T, target: T) {
+    if (value != target)
+        check(false) { "Expected $target got $value" }
+}
+
 fun <T> aocTest(
     year: Int,
     day: Int,
+    part: Int,
     logic: (List<String>) -> T,
     target: T?,
     useTestInput: Boolean,
 ) {
     val dayNumber = day.toString().padStart(2, '0')
     val inputFile = "Day${dayNumber}${if (useTestInput) "_test" else ""}"
-    val input = readInput("test/com/er453r/codingpuzzles/aoc/aoc$year/$inputFile.txt")
+    val input = if (part == 2 && useTestInput && File("test/com/er453r/codingpuzzles/aoc/aoc$year/${inputFile}2.txt").exists())
+        readInput("test/com/er453r/codingpuzzles/aoc/aoc$year/${inputFile}2.txt")
+    else
+        readInput("test/com/er453r/codingpuzzles/aoc/aoc$year/$inputFile.txt")
 
     println("[DAY $day]")
 

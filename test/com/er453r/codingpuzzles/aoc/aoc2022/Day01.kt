@@ -4,7 +4,9 @@ package com.er453r.codingpuzzles.aoc.aoc2022
 
 import com.er453r.codingpuzzles.aoc.AoCTestBase
 import com.er453r.codingpuzzles.utils.split
+import org.junit.jupiter.api.DisplayName
 
+@DisplayName("AoC 2022 - Day 01")
 class Day01 : AoCTestBase<Int>(
     year = 2022,
     day = 1,

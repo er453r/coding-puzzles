@@ -14,29 +14,24 @@ class Day01 : AoCTestBase<Int>(
 ) {
     private val words = "one, two, three, four, five, six, seven, eight, nine".split(", ")
 
-    override fun part1(input: List<String>) = input
-        .map { line ->
-            line.toCharArray()
-                .filter { it.isDigit() }
-                .map { it.toString().toInt() }
+    private fun String.digitize(useWords: Boolean = false) = this.mapIndexedNotNull { index, c ->
+        val wordIndex = words.indexOfFirst {
+            this.substring(index).startsWith(it)
         }
+
+        if (wordIndex != -1 && useWords)
+            wordIndex + 1
+        else if (c.isDigit())
+            c.toString().toInt()
+        else
+            null
+    }
+
+    override fun part1(input: List<String>) = input
+        .map { it.digitize() }
         .sumOf { 10 * it.first() + it.last() }
 
     override fun part2(input: List<String>) = input
-        .map { line ->
-            line.withIndex()
-                .map { char ->
-                    val digitFromWord = words.firstOrNull {
-                        line.substring(char.index).startsWith(it)
-                    }
-
-                    if (digitFromWord != null)
-                        words.indexOf(digitFromWord) + 1
-                    else if (char.value.isDigit())
-                        char.value.toString().toInt()
-                    else -1
-                }
-                .filter { it > 0 }
-        }
+        .map { it.digitize(useWords = true) }
         .sumOf { 10 * it.first() + it.last() }
 }

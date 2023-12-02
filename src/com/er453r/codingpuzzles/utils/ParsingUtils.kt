@@ -24,3 +24,11 @@ fun List<String>.split(): List<List<String>> {
 
     return result
 }
+
+val intLineRegex = """-?\d+""".toRegex()
+
+fun String.ints() = intLineRegex.findAll(this).map { it.value.toInt() }.toList()
+
+fun String.destructured(regex: Regex): MatchResult.Destructured = regex.matchEntire(this)
+    ?.destructured
+    ?: throw IllegalArgumentException("Incorrect line $this")

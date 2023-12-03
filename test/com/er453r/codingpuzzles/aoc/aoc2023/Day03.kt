@@ -15,85 +15,42 @@ class Day03 : AoCTestBase<Int>(
     testTarget2 = 467835,
     puzzleTarget2 = 84159075,
 ) {
+    data class NumberWithNeighbours(
+        val number: Int,
+        val neighbours: Set<GridCell<Char>>,
+    )
+
+    private fun numbersParts(grid: Grid<Char>): List<NumberWithNeighbours> {
+        val numberParts = mutableListOf<MutableList<GridCell<Char>>>()
+
+        grid.data.flatten().filter { it.value.isDigit() }.forEach { digit ->
+            if (grid.contains(digit.position + Vector2d.LEFT))
+                numberParts.firstOrNull { it.contains(grid[digit.position + Vector2d.LEFT]) }?.add(digit) ?: numberParts.add(mutableListOf(digit))
+            else
+                numberParts.add(mutableListOf(digit))
+        }
+
+        return numberParts.map {
+            NumberWithNeighbours(
+                number = it.map { cell -> cell.value }.joinToString("").toInt(),
+                neighbours = it.flatMap { cell -> grid.getAll(cell.position.neighbours8()) }.toSet() - it.toSet()
+            )
+        }.filter { it.neighbours.any { n -> n.value != '.' } }
+    }
+
     override fun part1(input: List<String>): Int {
         val grid = Grid(input.map { it.toCharArray().toList() })
 
-        var sum = 0;
-
-        for(y in 0 until grid.height){
-            var partNumber = ""
-            var adjacent = false
-
-            for(x in 0 until grid.width) {
-                val cell = grid.get(x, y)
-
-                if(cell.value.isDigit()) {
-                    partNumber += cell.value
-
-                    if(!adjacent)
-                        adjacent = grid.getAll(cell.position.neighbours8()).any { it.value != '.' && !it.value.isDigit() }
-                }
-
-                if((!cell.value.isDigit() || x == (grid.width - 1)) && partNumber.length > 0) {
-                    if(adjacent)
-                        sum += partNumber.toInt()
-
-                    adjacent = false
-                    partNumber = ""
-                }
-            }
-        }
-
-        return sum
+        return numbersParts(grid).sumOf { it.number }
     }
 
     override fun part2(input: List<String>): Int {
         val grid = Grid(input.map { it.toCharArray().toList() })
+        val numbersParts = numbersParts(grid)
 
-        val parts = mutableSetOf<Pair<Int, Set<Vector2d>>>();
-
-        for(y in 0 until grid.height){
-            var partNumber = ""
-            var adjacent = false
-            var neighbours = mutableSetOf<Vector2d>()
-
-            for(x in 0 until grid.width) {
-                val cell = grid.get(x, y)
-
-                if(cell.value.isDigit()) {
-                    partNumber += cell.value
-                    neighbours += cell.position.neighbours8()
-
-                    if(!adjacent)
-                        adjacent = grid.getAll(cell.position.neighbours8()).any { it.value != '.' && !it.value.isDigit() }
-                }
-
-                if((!cell.value.isDigit() || x == (grid.width - 1)) && partNumber.length > 0) {
-                    if(adjacent)
-                        parts.add(Pair(partNumber.toInt(), neighbours))
-
-                    adjacent = false
-                    partNumber = ""
-                    neighbours = mutableSetOf()
-                }
-            }
-        }
-
-        var sum = 0
-
-        for(y in 0 until grid.height){
-            for(x in 0 until grid.width) {
-                val cell = grid.get(x, y)
-
-                if(cell.value == '*'){
-                    val neighbourParts = parts.filter { it.second.contains(cell.position) }
-
-                    if(neighbourParts.size == 2)
-                        sum += neighbourParts.first().first * neighbourParts.last().first
-                }
-            }
-        }
-
-        return sum
+        return grid.data.flatten()
+            .filter { it.value == '*' }
+            .filter { cell -> numbersParts.count { cell in it.neighbours } == 2 }
+            .sumOf { cell -> numbersParts.filter { cell in it.neighbours }.map { it.number }.reduce(Int::times) }
     }
 }

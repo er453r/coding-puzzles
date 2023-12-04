@@ -37,10 +37,10 @@ class Day04 : AoCTestBase<Int>(
 
         while (stack.isNotEmpty()) {
             counter++
-            val top = stack.removeLast()
 
-            if (production.contains(top))
-                stack.addAll(production[top]!!)
+            stack.removeLast().let { top ->
+                production[top]?.let { stack.addAll(it) }
+            }
         }
 
         return counter

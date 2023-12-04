@@ -14,35 +14,32 @@ class Day04 : AoCTestBase<Int>(
     testTarget2 = 30,
     puzzleTarget2 = 7185540,
 ) {
-    override fun part1(input: List<String>) = input.map { line ->
-            val cards = line.split(":").last().split("|")
-            val winning = cards[0].ints().toSet()
-            val all = cards[1].ints().toSet()
-            all.intersect(winning)
+    override fun part1(input: List<String>) = input
+        .map { it.split("[:|]".toRegex()) }
+        .map { (_, winning, all) ->
+            all.ints().toSet().intersect(winning.ints().toSet())
         }
         .filter { it.isNotEmpty() }
         .sumOf { 2.pow(it.size - 1).toInt() }
 
     override fun part2(input: List<String>): Int {
-        val production = input.associate { line ->
-            val parts = line.split(":")
-            val id = parts[0].ints().first()
-            val cards = parts.last().split("|")
-            val winning = cards[0].ints().toSet()
-            val all = cards[1].ints().toSet()
-            val matches = all.intersect(winning)
+        val production = input
+            .map { it.split("[:|]".toRegex()) }
+            .associate { (idString, winningString, allString) ->
+                val id = idString.ints().first()
+                val matches = allString.ints().toSet().intersect(winningString.ints().toSet())
 
-            id to (id + 1 .. id + matches.size).toSet()
-        }
+                id to (id + 1..id + matches.size).toSet()
+            }
 
         val stack = production.keys.toMutableList()
         var counter = 0
 
-        while(stack.isNotEmpty()){
+        while (stack.isNotEmpty()) {
             counter++
             val top = stack.removeLast()
 
-            if(production.contains(top))
+            if (production.contains(top))
                 stack.addAll(production[top]!!)
         }
 

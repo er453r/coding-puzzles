@@ -2,10 +2,9 @@ package com.er453r.codingpuzzles.aoc.aoc2023
 
 import com.er453r.codingpuzzles.aoc.AoCTestBase
 import com.er453r.codingpuzzles.utils.ints
+import com.er453r.codingpuzzles.utils.pow
 import org.junit.jupiter.api.DisplayName
-import java.math.BigInteger
 
-// this is a template for this year
 @DisplayName("AoC 2023 - Day 04")
 class Day04 : AoCTestBase<Int>(
     year = 2023,
@@ -15,34 +14,24 @@ class Day04 : AoCTestBase<Int>(
     testTarget2 = 30,
     puzzleTarget2 = 7185540,
 ) {
-    fun Int.pow(exp: Int): Long {
-        return BigInteger.valueOf(this.toLong()).pow(exp).toLong()
-    }
 
-    override fun part1(input: List<String>): Int {
-        return input.map { line ->
-            val parts = line.split(":")
-            val parts2 = parts.last().split("|")
-            val winning = parts2[0].ints().toSet()
-            val all = parts2[1].ints().toSet()
-            val matches = all.intersect(winning)
 
-//            println(matches.size)
-//            println(2.pow(matches.size - 1))
-
-            if(matches.size > 0)
-                2.pow(matches.size - 1)
-            else 0
-        }.sum().toInt()
-    }
+    override fun part1(input: List<String>) = input.map { line ->
+            val cards = line.split(":").last().split("|")
+            val winning = cards[0].ints().toSet()
+            val all = cards[1].ints().toSet()
+            all.intersect(winning)
+        }
+        .filter { it.isNotEmpty() }
+        .sumOf { 2.pow(it.size - 1).toInt() }
 
     override fun part2(input: List<String>): Int {
         val production = input.associate { line ->
             val parts = line.split(":")
             val id = parts[0].ints().first()
-            val parts2 = parts.last().split("|")
-            val winning = parts2[0].ints().toSet()
-            val all = parts2[1].ints().toSet()
+            val cards = parts.last().split("|")
+            val winning = cards[0].ints().toSet()
+            val all = cards[1].ints().toSet()
             val matches = all.intersect(winning)
 
             id to (id + 1 .. id + matches.size).toSet()

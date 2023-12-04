@@ -14,8 +14,6 @@ class Day04 : AoCTestBase<Int>(
     testTarget2 = 30,
     puzzleTarget2 = 7185540,
 ) {
-
-
     override fun part1(input: List<String>) = input.map { line ->
             val cards = line.split(":").last().split("|")
             val winning = cards[0].ints().toSet()

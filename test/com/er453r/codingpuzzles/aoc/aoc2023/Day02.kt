@@ -15,9 +15,9 @@ class Day02 : AoCTestBase<Int>(
     puzzleTarget2 = 71585,
 ) {
     data class Draw(
-        var r: Int = 0,
-        var g: Int = 0,
-        var b: Int = 0,
+        val r: Int = 0,
+        val g: Int = 0,
+        val b: Int = 0,
     )
 
     private val limit = Draw(
@@ -27,23 +27,19 @@ class Day02 : AoCTestBase<Int>(
     )
 
     private fun parseGame(input: List<String>) = input.associate {
-        val parts = it.split(":")
+        val parts = it.split("[:,;]".toRegex())
         val gameId = parts.first().ints().first()
-        val drams = parts.last().split(";").flatMap { gameString ->
-            gameString.split(",").map { drawString ->
-                val (number, letter) = drawString.destructured(""".+?(\d+) (\w).+""".toRegex())
-
-                Draw().apply {
-                    when (letter) {
-                        "r" -> r = number.toInt()
-                        "g" -> g = number.toInt()
-                        else -> b = number.toInt()
-                    }
+        val draws = parts.drop(1)
+            .map { draw -> draw.destructured(""".+?(\d+) (\w).+""".toRegex()) }
+            .map { (number, letter) ->
+                when (letter) {
+                    "r" -> Draw(r = number.toInt())
+                    "g" -> Draw(g = number.toInt())
+                    else -> Draw(b = number.toInt())
                 }
             }
-        }
 
-        gameId to drams
+        gameId to draws
     }
 
     override fun part1(input: List<String>) = parseGame(input).entries.filter { (_, draws) ->

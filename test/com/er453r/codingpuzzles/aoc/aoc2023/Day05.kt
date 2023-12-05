@@ -1,6 +1,7 @@
 package com.er453r.codingpuzzles.aoc.aoc2023
 
 import com.er453r.codingpuzzles.aoc.AoCTestBase
+import com.er453r.codingpuzzles.utils.intersect
 import com.er453r.codingpuzzles.utils.longs
 import com.er453r.codingpuzzles.utils.split
 import org.junit.jupiter.api.DisplayName
@@ -39,11 +40,6 @@ class Day05 : AoCTestBase<Long>(
             value
         }
     }
-
-    private fun LongRange.intersect(other: LongRange): LongRange? = if (this.first <= other.last && other.first <= this.last)
-        maxOf(this.first, other.first).rangeTo(minOf(this.last, other.last))
-    else
-        null
 
     override fun part2(input: List<String>) = parseInput(input).let { (tempSeeds, transforms) ->
         val seeds = tempSeeds.chunked(2).map { LongRange(it.first(), it.first() + it.last() - 1) }

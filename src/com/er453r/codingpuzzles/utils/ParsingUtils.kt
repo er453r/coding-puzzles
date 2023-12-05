@@ -28,6 +28,7 @@ fun List<String>.split(): List<List<String>> {
 val intLineRegex = """-?\d+""".toRegex()
 
 fun String.ints() = intLineRegex.findAll(this).map { it.value.toInt() }.toList()
+fun String.longs() = intLineRegex.findAll(this).map { it.value.toLong() }.toList()
 
 fun String.destructured(regex: Regex) = regex.matchEntire(this)
     ?.destructured

@@ -14,33 +14,30 @@ class Day05 : AoCTestBase<Long>(
     testTarget2 = 46,
     puzzleTarget2 = 63179500,
 ) {
-    override fun part1(input: List<String>): Long {
+    private fun parseInput(input: List<String>): Pair<List<Long>, List<List<Pair<LongRange, Long>>>> {
         val chunks = input.split()
         val seeds = chunks.first().first().longs()
-        val transforms = chunks.drop(1).map {
-            it.drop(1).map {
-                val (destination, source, length) = it.longs()
-
-                LongRange(source, source + length - 1) to destination
-            }
+        val transforms = chunks.drop(1).map { transform ->
+            transform.drop(1)
+                .map { it.longs() }
+                .map { (destination, source, length) ->
+                    LongRange(source, source + length - 1) to destination - source
+                }
         }
 
-        return seeds.map {
-//            println("ssed $it")
-            var value = it
+        return Pair(seeds, transforms)
+    }
+
+    override fun part1(input: List<String>) = parseInput(input).let { (seeds, transforms) ->
+        seeds.minOf { seed ->
+            var value = seed
 
             transforms.forEach {
-                for (ranges in it) {
-                    if (ranges.first.contains(value)) {
-                        value = ranges.second + value - ranges.first.first
-                        break
-                    }
-                }
+                value = it.firstOrNull { range -> range.first.contains(value) }?.let { range -> value + range.second } ?: value
             }
-//            println("location $value")
-            value
 
-        }.min()
+            value
+        }
     }
 
     private fun LongRange.intersect(other: LongRange): LongRange? = if (this.first <= other.last && other.first <= this.last)
@@ -48,23 +45,14 @@ class Day05 : AoCTestBase<Long>(
     else
         null
 
-    override fun part2(input: List<String>): Long {
-        val chunks = input.split()
-        val seeds = chunks.first().first().longs().chunked(2).map { LongRange(it.first(), it.first() + it.last() - 1) }
-        val transforms = chunks.drop(1).map {
-            it.drop(1).map {
-                val (destination, source, length) = it.longs()
-
-                LongRange(source, source + length - 1) to destination - source
-            }
-        }
-
+    override fun part2(input: List<String>) = parseInput(input).let { (tempSeeds, transforms) ->
+        val seeds = tempSeeds.chunked(2).map { LongRange(it.first(), it.first() + it.last() - 1) }
         var unprocessed = seeds.toMutableList()
 
         transforms.forEach {
             val processed = mutableListOf<LongRange>()
 
-            derp@ while (unprocessed.isNotEmpty()) {
+            loop@ while (unprocessed.isNotEmpty()) {
                 val range = unprocessed.removeLast()
 
                 for (transform in it) {
@@ -83,7 +71,7 @@ class Day05 : AoCTestBase<Long>(
 
                         processed.add(LongRange(intersection.first + transform.second, intersection.last + transform.second))
 
-                        continue@derp
+                        continue@loop
                     }
                 }
 
@@ -93,6 +81,6 @@ class Day05 : AoCTestBase<Long>(
             unprocessed = processed
         }
 
-        return unprocessed.map { it.min() }.min()
-    }
+        unprocessed
+    }.minOf { it.min() }
 }

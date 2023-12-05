@@ -15,9 +15,9 @@ class Day05 : AoCTestBase<Long>(
     testTarget2 = 46,
     puzzleTarget2 = 63179500,
 ) {
-    private fun parseInput(input: List<String>): Pair<List<Long>, List<List<Pair<LongRange, Long>>>> {
+    private fun solve(input: List<String>, longsToRanges: (List<Long>) -> List<LongRange>): Long {
         val chunks = input.split()
-        val seeds = chunks.first().first().longs()
+        val seeds = longsToRanges(chunks.first().first().longs())
         val transforms = chunks.drop(1).map { transform ->
             transform.drop(1)
                 .map { it.longs() }
@@ -26,44 +26,22 @@ class Day05 : AoCTestBase<Long>(
                 }
         }
 
-        return Pair(seeds, transforms)
-    }
-
-    override fun part1(input: List<String>) = parseInput(input).let { (seeds, transforms) ->
-        seeds.minOf { seed ->
-            var value = seed
-
-            transforms.forEach {
-                value = it.firstOrNull { range -> range.first.contains(value) }?.let { range -> value + range.second } ?: value
-            }
-
-            value
-        }
-    }
-
-    override fun part2(input: List<String>) = parseInput(input).let { (tempSeeds, transforms) ->
-        val seeds = tempSeeds.chunked(2).map { LongRange(it.first(), it.first() + it.last() - 1) }
         var unprocessed = seeds.toMutableList()
 
-        transforms.forEach {
+        transforms.forEach { transformMap ->
             val processed = mutableListOf<LongRange>()
 
             loop@ while (unprocessed.isNotEmpty()) {
                 val range = unprocessed.removeLast()
 
-                for (transform in it) {
+                for (transform in transformMap) {
                     val intersection = range.intersect(transform.first)
 
                     if (intersection != null) {
-                        val rangeBefore = LongRange(range.first, intersection.first - 1)
-
-                        if (!rangeBefore.isEmpty())
-                            unprocessed.add(rangeBefore)
-
-                        val rangeAfter = LongRange(intersection.last + 1, range.last)
-
-                        if (!rangeAfter.isEmpty())
-                            unprocessed.add(rangeAfter)
+                        listOf(
+                            LongRange(range.first, intersection.first - 1),
+                            LongRange(intersection.last + 1, range.last)
+                        ).filter { !it.isEmpty() }.forEach { unprocessed.add(it) }
 
                         processed.add(LongRange(intersection.first + transform.second, intersection.last + transform.second))
 
@@ -77,6 +55,14 @@ class Day05 : AoCTestBase<Long>(
             unprocessed = processed
         }
 
-        unprocessed
-    }.minOf { it.min() }
+        return unprocessed.minOf { it.first }
+    }
+
+    override fun part1(input: List<String>) = solve(input) { longs ->
+        longs.map { LongRange(it, it) }
+    }
+
+    override fun part2(input: List<String>) = solve(input) { longs ->
+        longs.chunked(2).map { LongRange(it.first(), it.first() + it.last() - 1) }
+    }
 }

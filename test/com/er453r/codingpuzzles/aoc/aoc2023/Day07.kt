@@ -10,10 +10,10 @@ class Day07 : AoCTestBase<Long>(
     testTarget1 = 6440,
     puzzleTarget1 = 250120186,
     testTarget2 = 5905,
-    puzzleTarget2 = null,
+    puzzleTarget2 = 250665248,
 ) {
-    private val cardOrder = "A, K, Q, J, T, 9, 8, 7, 6, 5, 4, 3, 2".split(", ")
-    private val cardOrder2 = "A, K, Q, T, 9, 8, 7, 6, 5, 4, 3, 2, J".split(", ")
+    private val cardOrderPart1 = "A, K, Q, J, T, 9, 8, 7, 6, 5, 4, 3, 2".split(", ")
+    private val cardOrderPart2 = "A, K, Q, T, 9, 8, 7, 6, 5, 4, 3, 2, J".split(", ")
     private val types = "5oK, 4oK, FH, 3oK, 2p, 1p, HC".split(", ")
 
     data class Hand(
@@ -23,7 +23,7 @@ class Day07 : AoCTestBase<Long>(
         val score: Long,
     )
 
-    private fun score(handCards: List<String>, type: String): Long {
+    private fun score(handCards: List<String>, type: String, cardOrder: List<String>): Long {
         return ((cardOrder.indexOf(handCards[4]) + 1)
                 + 100L * (cardOrder.indexOf(handCards[3]) + 1)
                 + 10000L * (cardOrder.indexOf(handCards[2]) + 1)
@@ -32,92 +32,61 @@ class Day07 : AoCTestBase<Long>(
                 + 10000000000L * (types.indexOf(type) + 1))
     }
 
-    private fun score2(handCards: List<String>, type: String): Long {
-        return ((cardOrder2.indexOf(handCards[4]) + 1)
-                + 100L * (cardOrder2.indexOf(handCards[3]) + 1)
-                + 10000L * (cardOrder2.indexOf(handCards[2]) + 1)
-                + 1000000L * (cardOrder2.indexOf(handCards[1]) + 1)
-                + 100000000L * (cardOrder2.indexOf(handCards[0]) + 1)
-                + 10000000000L * (types.indexOf(type) + 1))
+    private fun solve(input: List<String>, cardOrder: List<String>, typeLogic: (Map<String, Int>) -> String) = input.map { line ->
+        val (hand, rankString) = line.split(" ")
+        val handCards = hand.toCharArray().map { it.toString() }
+        val cardMap = handCards.distinct().associateWith { handCards.count { card -> card == it } }
+        val type = typeLogic(cardMap)
+
+        Hand(handCards, type, rankString.toInt(), score(handCards, type, cardOrder))
+    }
+        .sortedBy { it.score }
+        .reversed()
+        .mapIndexed { index, hand ->
+            (index + 1) * hand.rank.toLong()
+        }.sum()
+
+    override fun part1(input: List<String>) = solve(input, cardOrderPart1) { cardMap ->
+        when {
+            cardMap.containsValue(5) -> "5oK"
+            cardMap.containsValue(4) -> "4oK"
+            cardMap.containsValue(3) && cardMap.containsValue(2) -> "FH"
+            cardMap.containsValue(3) -> "3oK"
+            cardMap.values.count { it == 2 } == 2 -> "2p"
+            cardMap.containsValue(2) -> "1p"
+            else -> "HC"
+        }
     }
 
-    override fun part1(input: List<String>) =
-        input.map { line ->
-            val (hand, rankString) = line.split(" ")
+    override fun part2(input: List<String>) = solve(input, cardOrderPart2) { cm ->
+        val jokers = cm["J"] ?: 0
+        val cardMap = cm.toMutableMap().also { it.remove("J") }
 
-            val handCards = hand.toCharArray().map { it.toString() }
+        when {
+            cm.containsValue(5) -> "5oK"
+            cardMap.containsValue(4) && jokers == 1 -> "5oK"
+            cardMap.containsValue(3) && jokers == 2 -> "5oK"
+            cardMap.containsValue(2) && jokers == 3 -> "5oK"
+            cardMap.containsValue(1) && jokers == 4 -> "5oK"
 
-            val cardMap = handCards.distinct().associateWith { handCards.count { card -> card == it } }
+            cm.containsValue(4) -> "4oK"
+            cardMap.containsValue(3) && jokers == 1 -> "4oK"
+            cardMap.containsValue(2) && jokers == 2 -> "4oK"
+            cardMap.containsValue(1) && jokers == 3 -> "4oK"
 
-            val type = when {
-                cardMap.containsValue(5) -> "5oK"
-                cardMap.containsValue(4) -> "4oK"
-                cardMap.containsValue(3) && cardMap.containsValue(2) -> "FH"
-                cardMap.containsValue(3) -> "3oK"
-                cardMap.values.count { it == 2 } == 2 -> "2p"
-                cardMap.containsValue(2) -> "1p"
-                else -> "HC"
-            }
+            cardMap.containsValue(3) && cardMap.containsValue(2) -> "FH"
+            cardMap.values.count { it == 2 } == 2 && jokers == 1 -> "FH"
 
-            Hand(handCards, type, rankString.toInt(), score(handCards, type))
+            cm.containsValue(3) -> "3oK"
+            cardMap.containsValue(2) && jokers == 1 -> "3oK"
+            cardMap.containsValue(1) && jokers == 2 -> "3oK"
+
+            cardMap.values.count { it == 2 } == 2 -> "2p"
+
+            cardMap.containsValue(2) -> "1p"
+            cardMap.containsValue(1) && jokers == 1 -> "1p"
+
+            else -> "HC"
         }
-            .sortedBy { it.score }
-            .reversed()
-            .mapIndexed { index, hand ->
-                println("${index + 1} $hand")
-                (index + 1) * hand.rank.toLong()
-            }.sum()
-
-    private fun jokers(cardMap:Map<String, Int>):Int = cardMap["J"] ?: 0
-
-    override fun part2(input: List<String>) =
-        input.map { line ->
-            val (hand, rankString) = line.split(" ")
-
-            val handCards = hand.toCharArray().map { it.toString() }
-
-            val cm = handCards.distinct().associateWith { handCards.count { card -> card == it } }
-            val cardMap  = cm.toMutableMap()
-            cardMap.remove("J")
-            val jokers = jokers(cm)
-
-            val type = when {
-                cm.containsValue(5) -> "5oK"
-                cardMap.containsValue(4) && jokers == 1 -> "5oK"
-                cardMap.containsValue(3) && jokers == 2 -> "5oK"
-                cardMap.containsValue(2) && jokers == 3 -> "5oK"
-                cardMap.containsValue(1) && jokers == 4 -> "5oK"
-
-                cm.containsValue(4) -> "4oK"
-                cardMap.containsValue(3) && jokers == 1 -> "4oK"
-                cardMap.containsValue(2) && jokers == 2 -> "4oK"
-                cardMap.containsValue(1) && jokers == 3 -> "4oK"
-
-                cardMap.containsValue(3) && cardMap.containsValue(2) -> "FH"
-                cardMap.values.count { it == 2 } == 2 && jokers == 1 -> "FH"
-
-                cm.containsValue(3) -> "3oK"
-                cardMap.containsValue(2) && jokers == 1 -> "3oK"
-                cardMap.containsValue(1) && jokers == 2 -> "3oK"
-
-                cardMap.values.count { it == 2 } == 2 -> "2p"
-
-                cardMap.containsValue(2) -> "1p"
-                cardMap.containsValue(1) && jokers == 1 -> "1p"
-
-                else -> "HC"
-            }
-
-            if(type == "HC" && handCards.distinct().size != 5)
-                println(handCards.sorted().joinToString("") )
-
-            Hand(handCards, type, rankString.toInt(), score2(handCards, type))
-        }
-            .sortedBy { it.score }
-            .reversed()
-            .mapIndexed { index, hand ->
-//                println("${index + 1} $hand")
-                (index + 1) * hand.rank.toLong()
-            }.sum() // 250665479 too high
-                    // 250665248
+    }
 }

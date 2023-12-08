@@ -8,3 +8,18 @@ fun LongRange.intersect(other: LongRange): LongRange? = if (this.first <= other.
     maxOf(this.first, other.first).rangeTo(minOf(this.last, other.last))
 else
     null
+
+fun Long.lcm(b: Long): Long {
+    val larger = if (this > b) this else b
+    val maxLcm = this * b
+    var lcm = larger
+
+    while (lcm <= maxLcm) {
+        if (lcm % this == 0L && lcm % b == 0L) {
+            return lcm
+        }
+        lcm += larger
+    }
+
+    return maxLcm
+}

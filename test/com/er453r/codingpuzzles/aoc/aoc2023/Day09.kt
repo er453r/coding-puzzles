@@ -35,7 +35,6 @@ class Day09 : AoCTestBase<Long>(
         history.first().last()
     }
 
-
     override fun part2(input: List<String>) = solve(input) { history ->
         history.last().addFirst(0)
 

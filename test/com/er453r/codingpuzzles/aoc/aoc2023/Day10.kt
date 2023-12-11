@@ -12,7 +12,7 @@ class Day10 : AoCTestBase<Int>(
     testTarget1 = 8,
     puzzleTarget1 = 7173,
     testTarget2 = 8,
-    puzzleTarget2 = null,
+    puzzleTarget2 = 291,
 ) {
     //    | is a vertical pipe connecting north and south.
     //    - is a horizontal pipe connecting east and west.
@@ -51,9 +51,9 @@ class Day10 : AoCTestBase<Int>(
 
 //        println("Ends $ends")
 
-        val startConnector = Connector.entries.filter {
-            it.ports.map { port -> start.position + port }.containsAll(ends.map { it.position })
-        }.first()
+        val startConnector = Connector.entries.first {
+            it.ports.map { port -> start.position + port }.containsAll(ends.map { end -> end.position })
+        }
 
         println("Real start connector is ${startConnector.value}")
 
@@ -80,7 +80,7 @@ class Day10 : AoCTestBase<Int>(
         return steps
     }
 
-    fun connectorPatter(connector: Connector) = when (connector) {
+    private fun connectorPatter(connector: Connector) = when (connector) {
         Connector.LR -> arrayOf(
             0, 0, 0,
             1, 1, 1,
@@ -138,11 +138,9 @@ class Day10 : AoCTestBase<Int>(
         if (ends.size != 2)
             throw Exception("Not 2 ends found!")
 
-//        println("Ends $ends")
-
-        val startConnector = Connector.entries.filter {
-            it.ports.map { port -> start.position + port }.containsAll(ends.map { it.position })
-        }.first()
+        val startConnector = Connector.entries.first {
+            it.ports.map { port -> start.position + port }.containsAll(ends.map { end -> end.position })
+        }
 
         println("Real start connector is ${startConnector.value}")
 
@@ -168,10 +166,6 @@ class Day10 : AoCTestBase<Int>(
         val colorMap = Grid(List(3 * tiles.height) {
             List(3 * tiles.width) { -1 }
         })
-
-        val colorToTile = colorMap.data.flatten().associateWith {
-            tiles.get(it.position.x / 3, it.position.y / 3)
-        }
 
         val tileToColors = tiles.data.flatten().associateWith { tile ->
             listOf(
@@ -206,31 +200,28 @@ class Day10 : AoCTestBase<Int>(
                 color.value = 0
         }
 
-//        colorMap.data.forEach { row ->
-//            row.forEach {
-//                print(
-//                    when (it.value) {
-//                        1 -> "x"
-//                        0 -> "O"
-//                        -1 -> " "
-//                        else -> "?"
-//                    }
-//                )
-//            }
-//            println()
-//        }
-//        println()
-
         // ready to flood fill
-        var outside = colorMap.data.flatten().filter { it.value == 0 }.map { it.position }.toSet()
-        var unknown = colorMap.data.flatten().filter { it.value == -1 }.map { it.position }.toSet()
+        val outside = colorMap.data.asSequence().flatten().filter { it.value == 0 }.map { it.position }.toSet().toMutableSet()
+        val unknown = colorMap.data.asSequence().flatten().filter { it.value == -1 }.map { it.position }.toSet().toMutableSet()
         var lastUnknownSize = unknown.size
 
         println("flood fill")
 
         while (true) {
+//            val newOutside = outside.flatMap { node ->
+//                node.neighboursCross()
+//            }.toSet() intersect unknown
+
+//            val newOutside = unknown.filter { node ->
+//                node.neighboursCross().intersect(outside).isNotEmpty()
+//            }.toSet()
+//
+//            colorMap.getAll(newOutside).forEach {
+//                it.value = 0
+//            }
+
             val newOutside = outside.flatMap { node ->
-                colorMap.getAll(node.neighbours8()).filter { it.value == -1 }.map {
+                colorMap.getAll(node.neighboursCross()).filter { it.value == -1 }.map {
                     it.value = 0
                     it.position
                 }
@@ -239,26 +230,11 @@ class Day10 : AoCTestBase<Int>(
             outside += newOutside
             unknown -= newOutside
 
-            if(lastUnknownSize == unknown.size)
+            if (lastUnknownSize == unknown.size)
                 break
 
             lastUnknownSize = unknown.size
         }
-
-//        colorMap.data.forEach { row ->
-//            row.forEach {
-//                print(
-//                    when (it.value) {
-//                        1 -> "x"
-//                        0 -> "O"
-//                        -1 -> " "
-//                        else -> "?"
-//                    }
-//                )
-//            }
-//            println()
-//        }
-//        println()
 
         println("flood fill done")
 

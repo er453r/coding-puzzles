@@ -26,6 +26,13 @@ class Grid<T>(data: List<List<T>>) {
     fun getAll(vectors: Set<Vector2d>) = vectors.filter { contains(it) }.map { get(it) }
 }
 
+fun Grid<Char>.print() {
+    println()
+    this.data.forEach { row ->
+        println(row.joinToString("") { it.value.toString() })
+    }
+    println()
+}
 
 data class Vector2d(var x: Int = 0, var y: Int = 0) {
     companion object {

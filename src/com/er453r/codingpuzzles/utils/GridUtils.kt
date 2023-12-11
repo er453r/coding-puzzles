@@ -3,7 +3,7 @@ package com.er453r.codingpuzzles.utils
 import kotlin.math.abs
 import kotlin.math.max
 
-class GridCell<T>(
+data class GridCell<T>(
     var value: T,
     val position: Vector2d,
 )
@@ -23,7 +23,6 @@ class Grid<T>(data: List<List<T>>) {
 
     operator fun contains(vector2d: Vector2d) = contains(vector2d.x, vector2d.y)
 
-    fun crossNeighbours(vector2d: Vector2d) = Vector2d.DIRECTIONS.map { vector2d + it }.filter { contains(it) }.map { get(it) }
     fun getAll(vectors: Set<Vector2d>) = vectors.filter { contains(it) }.map { get(it) }
 }
 
@@ -34,7 +33,7 @@ data class Vector2d(var x: Int = 0, var y: Int = 0) {
         val DOWN = Vector2d(0, 1)
         val LEFT = Vector2d(-1, -0)
         val RIGHT = Vector2d(1, 0)
-        val DIRECTIONS = arrayOf(UP, DOWN, LEFT, RIGHT)
+        val DIRECTIONS = setOf(UP, DOWN, LEFT, RIGHT)
     }
 
     operator fun plus(vector2d: Vector2d) = Vector2d(x + vector2d.x, y + vector2d.y)
@@ -73,5 +72,12 @@ data class Vector2d(var x: Int = 0, var y: Int = 0) {
         this + DOWN,
         this + DOWN + LEFT,
         this + DOWN + RIGHT,
+    )
+
+    fun neighboursCross() = setOf(
+        this + UP,
+        this + DOWN,
+        this + LEFT,
+        this + RIGHT,
     )
 }

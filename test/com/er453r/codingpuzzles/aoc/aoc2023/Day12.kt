@@ -3,6 +3,7 @@ package com.er453r.codingpuzzles.aoc.aoc2023
 import com.er453r.codingpuzzles.aoc.AoCTestBase
 import com.er453r.codingpuzzles.utils.ints
 import org.junit.jupiter.api.DisplayName
+import kotlin.math.max
 
 @DisplayName("AoC 2023 - Day 12")
 class Day12 : AoCTestBase<Int>(
@@ -29,6 +30,7 @@ class Day12 : AoCTestBase<Int>(
             val firstUnknown = top.indexOfFirst { it == '?' }
 
             val topGroups = gRegex.findAll(top.joinToString("")).map { it.value.length }.toList()
+            val topGroupsKnown = gRegex.findAll(top.joinToString("").substring(0, max(firstUnknown, 0))).map { it.value.length }.toList()
 
             if (firstUnknown == -1){
                 if(topGroups.toString() == groupsString)
@@ -40,15 +42,17 @@ class Day12 : AoCTestBase<Int>(
                 continue
             else if(top.count { it == '.' } > okSum)
                 continue
-//            else if(topGroups.size > groups.size )
-//                continue
-//            else if(topGroups.indices.indexOfFirst { topGroups[it] > groups[it] } != -1)
-//                continue
+            else if(topGroupsKnown.size > groups.size )
+                continue
+            else if(topGroupsKnown.indices.indexOfFirst { topGroupsKnown[it] > groups[it] } != -1)
+                continue
             else {
                 stack.add(top.toMutableList().also { l -> l[firstUnknown] = '#' })
                 stack.add(top.toMutableList().also { l -> l[firstUnknown] = '.' })
             }
         }
+
+//        println(ok.size)
 
         return ok.size
     }
@@ -66,7 +70,7 @@ class Day12 : AoCTestBase<Int>(
         return input.sumOf { line ->
             val r = line.split(" ").first()
             val g = line.ints()
-            val row = (r + r + r + r + r).toCharArray().toList()
+            val row = (r + "?" + r + "?" + r + "?" + r + "?" + r).toCharArray().toList()
             val groups = (g + g + g + g + g)
 
             countRow(row, groups)

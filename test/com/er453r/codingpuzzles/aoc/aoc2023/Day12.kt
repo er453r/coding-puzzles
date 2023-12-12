@@ -24,7 +24,7 @@ class Day12 : AoCTestBase<Int>(
         while (stack.isNotEmpty()) {
             val top = stack.removeLast()
 
-            if(top.length != row.length)
+            if (top.length != row.length)
                 println("Something is yesno!")
 
             val firstUnknown = top.indexOfFirst { it == '?' }
@@ -39,71 +39,75 @@ class Day12 : AoCTestBase<Int>(
             } else {
                 val topGroupsKnown = gRegex.findAll(top.substring(0, max(firstUnknown, 0))).map { it.value.length }.toList()
                 val previous = if (firstUnknown > 1) top[firstUnknown - 1] else ""
+                val hasNextGroup = topGroupsKnown.size < groups.size
 
-//                if(topGroupsKnown.indices.any { topGroupsKnown[it] > groups[it] })
-//                    continue
-//                else if (previous == '#') {
+                if (topGroupsKnown.size > groups.size || topGroupsKnown.indices.any { topGroupsKnown[it] > groups[it] }) {
+                    continue
+                } else if (topGroupsKnown.size > 1 && topGroupsKnown.take(topGroupsKnown.size - 1).indices.any { topGroupsKnown[it] != groups[it] }) {
+                    continue
+//                } else if (previous == '#') {
 //                    val leftInGroup = groups[topGroupsKnown.size - 1] - topGroupsKnown.last()
+//
+//                    if(firstUnknown + leftInGroup  > top.length)
+//                        continue
+//
 //                    val filledGroup = top.replaceRange(firstUnknown, firstUnknown + leftInGroup, "#".repeat(leftInGroup))
 //
-//                    if(firstUnknown + leftInGroup + 1 < filledGroup.length)
+//                    if (firstUnknown + leftInGroup < filledGroup.length) {
 //                        stack.add(filledGroup.replaceRange(firstUnknown + leftInGroup, firstUnknown + leftInGroup + 1, "."))
-//                    else
+//                    }else{
 //                        stack.add(filledGroup)
+//                    }
 //
-//                    if(stack.takeLast(1).any { it.length != row.length })
+//                    if (stack.takeLast(1).any { it.length != row.length })
 //                        println("Something is yesno!")
-//                } else if (previous == '.') {
-//                    val hasNextGroup = topGroupsKnown.size < groups.size
+//                } else if (previous == '.' && !hasNextGroup) {
+//                    stack.add(top.replaceRange(firstUnknown, top.length, ".".repeat(top.length - firstUnknown)))
 //
-//                    if(!hasNextGroup) {
-//                        stack.add(top.replaceRange(firstUnknown, top.length, ".".repeat(top.length + 1 - firstUnknown)))
+//                    if (stack.takeLast(1).any { it.length != row.length })
+//                        println("Something is yesno!")
+//            } else if (previous == '.' && hasNextGroup) {
+//                val nextGroup = groups[topGroupsKnown.size]
 //
-//                        if(stack.takeLast(1).any { it.length != row.length })
-//                            println("Something is yesno!")
-//                    }
-//                    else{
-//                        val nextGroup = groups[topGroupsKnown.size + 1]
+//                if (firstUnknown + nextGroup <= top.length)
+//                    stack.add(top.replaceRange(firstUnknown, firstUnknown + nextGroup, "#".repeat(nextGroup)))
 //
-//                        stack.add(top.replaceRange(firstUnknown, firstUnknown + nextGroup, "#".repeat(nextGroup)))
-//                        stack.add(top.replaceRange(firstUnknown, firstUnknown + 1, "."))
+//                stack.add(top.replaceRange(firstUnknown, firstUnknown + 1, "."))
 //
-//                        if(stack.takeLast(2).any { it.length != row.length })
-//                            println("Something is yesno!")
-//                    }
-//                }
-//                else {
-                    stack.add(top.replaceRange(firstUnknown, firstUnknown + 1, "#"))
-                    stack.add(top.replaceRange(firstUnknown, firstUnknown + 1, "."))
+//                if (stack.takeLast(2).any { it.length != row.length })
+//                    println("Something is yesno!")
+            } else {
+                stack.add(top.replaceRange(firstUnknown, firstUnknown + 1, "#"))
+                stack.add(top.replaceRange(firstUnknown, firstUnknown + 1, "."))
 
-                    if(stack.takeLast(1).any { it.length != row.length })
-                        println("Something is yesno!")
-//                }
+                if (stack.takeLast(1).any { it.length != row.length })
+                    println("Something is yesno!")
             }
         }
-
-//        println("$row ${ok.size}")
-
-        return ok
     }
 
-    override fun part1(input: List<String>): Int {
-        return input.sumOf { line ->
-            val row = line.split(" ").first()
-            val groups = line.ints()
+//        println("$row ${ok}")
 
-            countRow(row, groups)
-        }
+    return ok
+}
+
+override fun part1(input: List<String>): Int {
+    return input.sumOf { line ->
+        val row = line.split(" ").first()
+        val groups = line.ints()
+
+        countRow(row, groups)
     }
+}
 
-    override fun part2(input: List<String>): Int {
-        return input.sumOf { line ->
-            val r = line.split(" ").first()
-            val g = line.ints()
-            val row = (0 until 5).joinToString("?") { r }
-            val groups = (0 until 5).flatMap { g }
+override fun part2(input: List<String>): Int {
+    return input.sumOf { line ->
+        val r = line.split(" ").first()
+        val g = line.ints()
+        val row = (0 until 5).joinToString("?") { r }
+        val groups = (0 until 5).flatMap { g }
 
-            countRow(row, groups)
-        }
+        countRow(row, groups)
     }
+}
 }

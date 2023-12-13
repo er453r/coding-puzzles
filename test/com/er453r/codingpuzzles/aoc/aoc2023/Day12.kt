@@ -3,84 +3,60 @@ package com.er453r.codingpuzzles.aoc.aoc2023
 import com.er453r.codingpuzzles.aoc.AoCTestBase
 import com.er453r.codingpuzzles.utils.ints
 import org.junit.jupiter.api.DisplayName
-import kotlin.math.max
 
 @DisplayName("AoC 2023 - Day 12")
-class Day12 : AoCTestBase<Int>(
+class Day12 : AoCTestBase<Long>(
     year = 2023,
     day = 12,
     testTarget1 = 21,
     puzzleTarget1 = 8419,
     testTarget2 = 525152,
-    puzzleTarget2 = null,
+    puzzleTarget2 = 160500973317706,
 ) {
-    private fun countRow(row: String, groups: List<Int>): Int {
-        val groupsString = groups.toString()
-        val groupsSum = groups.sum()
-        val dotSum = row.length - groups.sum()
-        val stack = mutableListOf(row)
-        var ok = 0
+    private val cache = mutableMapOf<Triple<String, List<Int>, Char?>, Long>()
 
-        val gRegex = "(#+)".toRegex()
+    private fun countLineCached(line: String, groups: List<Int>, required: Char? = null): Long {
+        val key = Triple(line, groups, required)
 
-        while (stack.isNotEmpty()) {
-            val top = stack.removeLast()
+        if (key !in cache)
+            cache[key] = countLine(line, groups, required)
 
-            val firstUnknown = top.indexOfFirst { it == '?' }
-            val topGroups = gRegex.findAll(top).map { it.value.length }.toList()
+        return cache[key]!!
+    }
 
-            if (firstUnknown == -1) {
-                if (topGroups.toString() == groupsString)
-                    ok++
-                else
-                    continue
-            } else {
-                val topGroupsKnown = gRegex.findAll(top.substring(0, max(firstUnknown, 0))).map { it.value.length }.toList()
-                val dotCount = top.count { it == '.' }
-                val groupCount = top.count { it == '#' }
+    private fun countLine(line: String, groups: List<Int>, required: Char? = null): Long {
+        if (line.isEmpty()) {
+            return if (groups.isEmpty())
+                1
+            else
+                0
+        }
 
-                if (topGroupsKnown.size > groups.size || topGroupsKnown.indices.any { topGroupsKnown[it] > groups[it] }) {
-                    continue
-                } else if (topGroupsKnown.size > 1 && topGroupsKnown.take(topGroupsKnown.size - 1).indices.any { topGroupsKnown[it] != groups[it] }) {
-                    continue
-                } else if (dotCount > dotSum) {
-                    continue
-                } else if (groupCount > groupsSum) {
-                    continue
-                } else {
-                    if(groupCount < groupsSum)
-                        stack.add(top.replaceRange(firstUnknown, firstUnknown + 1, "#"))
-
-                    if(dotCount < dotSum)
-                        stack.add(top.replaceRange(firstUnknown, firstUnknown + 1, "."))
-                }
+        return when {
+            line.first() == '?' -> countLineCached('.' + line.drop(1), groups, required) + countLineCached('#' + line.drop(1), groups, required)
+            required != null && line.first() != required -> 0
+            line.first() == '.' -> countLineCached(line.drop(1), groups)
+            line.first() == '#' -> when {
+                groups.isEmpty() -> 0 // lol, not good
+                groups.first() == 0 -> 0 // not good
+                groups.first() == 1 -> countLineCached(line.drop(1), groups.drop(1), '.')
+                else -> countLineCached(line.drop(1), listOf(groups.first() - 1) + groups.drop(1), '#')
             }
-        }
 
-//        println("$row ${ok}")
-
-        return ok
-    }
-
-    override fun part1(input: List<String>): Int {
-        return input.sumOf { line ->
-            val row = line.split(" ").first()
-            val groups = line.ints()
-
-            countRow(row, groups)
+            else -> throw Exception("This should never happen")
         }
     }
 
-    override fun part2(input: List<String>): Int {
-        return input.mapIndexed { index, line ->
-            val r = line.split(" ").first()
-            val g = line.ints()
-            val row = (0 until 5).joinToString("?") { r }
-            val groups = (0 until 5).flatMap { g }
+    private fun solve(input: List<String>, repeat: Int) = input.sumOf { line ->
+        val r = line.split(" ").first()
+        val g = line.ints()
+        val row = (0 until repeat).joinToString("?") { r }
+        val groups = (0 until repeat).flatMap { g }
 
-            println(index)
-
-            countRow(row, groups)
-        }.sum()
+        countLineCached(row, groups)
     }
+
+    override fun part1(input: List<String>) = solve(input, 1)
+
+    override fun part2(input: List<String>) = solve(input, 5)
 }

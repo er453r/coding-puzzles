@@ -24,6 +24,12 @@ class Grid<T>(data: List<List<T>>) {
     operator fun contains(vector2d: Vector2d) = contains(vector2d.x, vector2d.y)
 
     fun getAll(vectors: Set<Vector2d>) = vectors.filter { contains(it) }.map { get(it) }
+
+    fun row(n:Int) = data[n]
+    fun column(n:Int) = (0 until height).map { data[it][n] }
+
+    fun rows() = data
+    fun columns() = (0 until width).map { column(it) }
 }
 
 fun Grid<Char>.print() {

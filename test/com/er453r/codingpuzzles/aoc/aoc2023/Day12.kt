@@ -24,27 +24,20 @@ class Day12 : AoCTestBase<Long>(
         return cache[key]!!
     }
 
-    private fun countLine(line: String, groups: List<Int>, required: Char? = null): Long {
-        if (line.isEmpty()) {
-            return if (groups.isEmpty())
-                1
-            else
-                0
+    private fun countLine(line: String, groups: List<Int>, required: Char? = null) = when {
+        line.isEmpty() && groups.isEmpty() -> 1 // this is OK
+        line.isEmpty() && groups.isNotEmpty() -> 0 // not everything used
+        line.first() == '?' -> countLineCached('.' + line.drop(1), groups, required) + countLineCached('#' + line.drop(1), groups, required) // just split
+        required != null && line.first() != required -> 0 // required by previous step
+        line.first() == '.' -> countLineCached(line.drop(1), groups) // easy - just crop
+        line.first() == '#' -> when {
+            groups.isEmpty() -> 0 // lol, not good
+            groups.first() == 0 -> 0 // not good
+            groups.first() == 1 -> countLineCached(line.drop(1), groups.drop(1), '.') // drop the group, require .
+            else -> countLineCached(line.drop(1), listOf(groups.first() - 1) + groups.drop(1), '#') // reduce the group
         }
 
-        return when {
-            line.first() == '?' -> countLineCached('.' + line.drop(1), groups, required) + countLineCached('#' + line.drop(1), groups, required)
-            required != null && line.first() != required -> 0
-            line.first() == '.' -> countLineCached(line.drop(1), groups)
-            line.first() == '#' -> when {
-                groups.isEmpty() -> 0 // lol, not good
-                groups.first() == 0 -> 0 // not good
-                groups.first() == 1 -> countLineCached(line.drop(1), groups.drop(1), '.')
-                else -> countLineCached(line.drop(1), listOf(groups.first() - 1) + groups.drop(1), '#')
-            }
-
-            else -> throw Exception("This should never happen")
-        }
+        else -> throw Exception("This should never happen")
     }
 
     private fun solve(input: List<String>, repeat: Int) = input.sumOf { line ->

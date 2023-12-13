@@ -16,6 +16,7 @@ class Day12 : AoCTestBase<Int>(
 ) {
     private fun countRow(row: String, groups: List<Int>): Int {
         val groupsString = groups.toString()
+        val groupsSum = groups.sum()
         val stack = mutableListOf(row)
         var ok = 0
 
@@ -61,11 +62,11 @@ class Day12 : AoCTestBase<Int>(
 //
 //                    if (stack.takeLast(1).any { it.length != row.length })
 //                        println("Something is yesno!")
-//                } else if (previous == '.' && !hasNextGroup) {
-//                    stack.add(top.replaceRange(firstUnknown, top.length, ".".repeat(top.length - firstUnknown)))
-//
-//                    if (stack.takeLast(1).any { it.length != row.length })
-//                        println("Something is yesno!")
+                } else if (top.count { it == '#' } == groupsSum) {
+                    stack.add(top.replaceRange(firstUnknown, top.length, ".".repeat(top.length - firstUnknown)))
+
+                    if (stack.takeLast(1).any { it.length != row.length })
+                        println("Something is yesno!")
 //            } else if (previous == '.' && hasNextGroup) {
 //                val nextGroup = groups[topGroupsKnown.size]
 //

@@ -2,7 +2,7 @@ package com.er453r.codingpuzzles.aoc.aoc2023
 
 import com.er453r.codingpuzzles.aoc.AoCTestBase
 import com.er453r.codingpuzzles.utils.Grid
-import com.er453r.codingpuzzles.utils.print
+import com.er453r.codingpuzzles.utils.GridCell
 import com.er453r.codingpuzzles.utils.split
 import org.junit.jupiter.api.DisplayName
 
@@ -15,7 +15,7 @@ class Day13 : AoCTestBase<Int>(
     testTarget2 = 400,
     puzzleTarget2 = 32069,
 ) {
-    private fun validate(reflectionPoint: Int, columns: List<String>): Boolean {
+    private fun validateReflection(reflectionPoint: Int, columns: List<String>): Boolean {
         var left = reflectionPoint - 1
         var right = reflectionPoint
 
@@ -31,63 +31,49 @@ class Day13 : AoCTestBase<Int>(
         }
     }
 
-    private fun verticalReflectionPoints(grid: Grid<Char>): Set<Int> {
-        val columns = grid.columns().map { column -> column.map { it.value }.joinToString("") }
+    private fun reflectionPoints(rows: List<List<GridCell<Char>>>, scale: Int = 1): Set<Int> {
+        val rowStrings = rows.map { row -> row.map { it.value }.joinToString("") }
 
-        return columns.indices
-            .filter { it > 0 && columns[it] == columns[it - 1] && validate(it, columns) }
+        return rowStrings.indices
+            .filter { it > 0 && rowStrings[it] == rowStrings[it - 1] && validateReflection(it, rowStrings) }
+            .map { scale * it }
             .toSet()
     }
 
-    private fun horizontalReflectionPoints(grid: Grid<Char>): Set<Int> {
-        val rows = grid.rows().map { row -> row.map { it.value }.joinToString("") }
+    override fun part1(input: List<String>) = input.split().sumOf { block ->
+        val grid = Grid(block.map { it.toCharArray().toList() })
 
-        return rows.indices
-            .filter { it > 0 && rows[it] == rows[it - 1] && validate(it, rows) }
-            .map { 100 * it }
-            .toSet()
+        reflectionPoints(grid.columns(), 1).sum() + reflectionPoints(grid.rows(), 100).sum()
     }
 
-    override fun part1(input: List<String>): Int {
-        return input.split().sumOf { block ->
-            val grid = Grid(block.map { it.toCharArray().toList() })
+    override fun part2(input: List<String>) = input.split().sumOf { block ->
+        val grid = Grid(block.map { it.toCharArray().toList() })
+        val originalVertical = reflectionPoints(grid.columns(), 1)
+        val originalHorizontal = reflectionPoints(grid.rows(), 100)
+        val originalSum = originalVertical.sum() + originalHorizontal.sum()
+        val cells = grid.data.flatten()
 
-            verticalReflectionPoints(grid).sum() + horizontalReflectionPoints(grid).sum()
-        }
-    }
+        var found = -1
 
-    override fun part2(input: List<String>): Int {
-        return input.split().sumOf { block ->
-            val grid = Grid(block.map { it.toCharArray().toList() })
+        for (n in cells.indices) {
+            cells[n].value = if (cells[n].value == '#') '.' else '#' // smudge
 
-            val originalVertical = verticalReflectionPoints(grid)
-            val originalHorizontal = horizontalReflectionPoints(grid)
-            val originalSum = verticalReflectionPoints(grid).sum() + horizontalReflectionPoints(grid).sum()
+            if (n > 0)
+                cells[n - 1].value = if (cells[n - 1].value == '#') '.' else '#' // un-smudge
 
-            val cells = grid.data.flatten()
+            val vertical = reflectionPoints(grid.columns(), 1) - originalVertical
+            val horizontal = reflectionPoints(grid.rows(), 100) - originalHorizontal
+            val sum = vertical.sum() + horizontal.sum()
 
-            var found = -1
-
-            for(n in cells.indices){
-                cells[n].value = if(cells[n].value == '#') '.' else '#'
-
-                if(n > 0)
-                    cells[n - 1].value = if(cells[n - 1].value == '#') '.' else '#'
-
-                val vertical = verticalReflectionPoints(grid) - originalVertical
-                val horizontal = horizontalReflectionPoints(grid) - originalHorizontal
-                val sum = vertical.sum() + horizontal.sum()
-
-                if(sum > 0 && sum != originalSum){
-                    found = sum
-                    break
-                }
+            if (sum > 0 && sum != originalSum) {
+                found = sum
+                break
             }
-
-            if(found == -1)
-                throw Exception("this should never happen")
-
-            found
         }
+
+        if (found == -1)
+            throw Exception("this should never happen")
+
+        found
     }
 }

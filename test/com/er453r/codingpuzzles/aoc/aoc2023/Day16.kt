@@ -2,6 +2,7 @@ package com.er453r.codingpuzzles.aoc.aoc2023
 
 import com.er453r.codingpuzzles.aoc.AoCTestBase
 import com.er453r.codingpuzzles.utils.Grid
+import com.er453r.codingpuzzles.utils.Impossible
 import com.er453r.codingpuzzles.utils.Vector2d
 import org.junit.jupiter.api.DisplayName
 
@@ -23,17 +24,12 @@ class Day16 : AoCTestBase<Int>(
         while (beams.isNotEmpty()) {
             val beam = beams.removeLast()
 
-            if (!grid.contains(beam.position))
-                continue
-
-            val cell = grid[beam.position]
-
-            if (beam in energized)
+            if (beam in energized || !grid.contains(beam.position))
                 continue
 
             energized += beam.copy()
 
-            when (cell.value) {
+            when (grid[beam.position].value) {
                 '.' -> beam.position += beam.direction
                 '|' -> when (beam.direction) {
                     Vector2d.RIGHT, Vector2d.LEFT -> {
@@ -43,7 +39,7 @@ class Day16 : AoCTestBase<Int>(
                     }
 
                     Vector2d.UP, Vector2d.DOWN -> beam.position += beam.direction
-                    else -> throw Exception("this should never happen")
+                    else -> throw Impossible()
                 }
 
                 '-' -> when (beam.direction) {
@@ -54,7 +50,7 @@ class Day16 : AoCTestBase<Int>(
                     }
 
                     Vector2d.LEFT, Vector2d.RIGHT -> beam.position += beam.direction
-                    else -> throw Exception("this should never happen")
+                    else -> throw Impossible()
                 }
 
                 '/' -> when (beam.direction) {
@@ -78,7 +74,7 @@ class Day16 : AoCTestBase<Int>(
                         beam.position += Vector2d.LEFT
                     }
 
-                    else -> throw Exception("this should never happen")
+                    else -> throw Impossible()
                 }
 
                 '\\' -> when (beam.direction) {
@@ -102,10 +98,10 @@ class Day16 : AoCTestBase<Int>(
                         beam.position += Vector2d.RIGHT
                     }
 
-                    else -> throw Exception("this should never happen")
+                    else -> throw Impossible()
                 }
 
-                else -> throw Exception("this should never happen")
+                else -> throw Impossible()
             }
 
             beams += beam
@@ -134,7 +130,6 @@ class Day16 : AoCTestBase<Int>(
             startingPoints += BeamPoint(Vector2d(0, y), Vector2d.RIGHT)
             startingPoints += BeamPoint(Vector2d(grid.width - 1, y), Vector2d.LEFT)
         }
-
 
         return startingPoints.maxOf { countEnergized(grid, it) }
     }

@@ -1,8 +1,9 @@
 package com.er453r.codingpuzzles.utils
 
 import java.util.PriorityQueue
+import java.util.SortedSet
 
-data class Task<T>(val node:T, val cost:Int)
+private data class Task<T>(val node:T, val cost:Int)
 
 fun <Node> aStar(
     start: Node,
@@ -11,10 +12,10 @@ fun <Node> aStar(
     heuristic: (Node) -> Int = { 0 },
     neighbours: (Node) -> Collection<Node>,
 ): List<Node> {
-    val openSet = PriorityQueue<Task<Node>>{ a, b -> b.cost - a.cost }
     val gScores = mutableMapOf(start to 0)
     val fScores = mutableMapOf(start to heuristic(start))
     val cameFrom = mutableMapOf<Node, Node>()
+    val openSet = PriorityQueue<Node>{ a, b -> fScores[a]!! - fScores[b]!! }.also { it.add(start) }
 
     fun reconstructPath(cameFrom: Map<Node, Node>, end: Node): List<Node> {
         val path = mutableListOf(end)
@@ -29,7 +30,7 @@ fun <Node> aStar(
     }
 
     while (openSet.isNotEmpty()) {
-        val current = openSet.poll().node
+        val current = openSet.poll()
 
         if (isEndNode(current))
             return reconstructPath(cameFrom, current)
@@ -42,8 +43,8 @@ fun <Node> aStar(
                 gScores[neighbour] = neighbourScore
                 fScores[neighbour] = neighbourScore + heuristic(neighbour)
 
-                if (neighbour !in openSet.map { it.node })
-                    openSet += Task(neighbour, fScores[neighbour]!!)
+                if (neighbour !in openSet)
+                    openSet += neighbour
             }
         }
     }

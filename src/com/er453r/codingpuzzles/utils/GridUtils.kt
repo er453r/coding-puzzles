@@ -32,10 +32,10 @@ class Grid<T>(data: List<List<T>>) {
     fun columns() = (0 until width).map { column(it) }
 }
 
-fun Grid<Char>.print() {
+fun <T> Grid<T>.print(convert:(Vector2d)->Char) {
     println()
     this.data.forEach { row ->
-        println(row.joinToString("") { it.value.toString() })
+        println(row.joinToString("") { convert(it.position).toString() })
     }
     println()
 }

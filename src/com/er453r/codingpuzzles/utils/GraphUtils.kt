@@ -3,8 +3,8 @@ package com.er453r.codingpuzzles.utils
 fun <Node> aStar(
     start: Node,
     isEndNode: (Node) -> Boolean,
-    moveCost: (Node, Node) -> Int,
-    heuristic: (Node) -> Int,
+    moveCost: (Node, Node) -> Int = { _, _ -> 1 },
+    heuristic: (Node) -> Int = { 0 },
     neighbours: (Node) -> Collection<Node>,
 ): List<Node> {
     val openSet = mutableSetOf(start)

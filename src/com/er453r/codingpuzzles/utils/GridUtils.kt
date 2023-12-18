@@ -40,6 +40,30 @@ fun <T> Grid<T>.print(convert:(Vector2d)->Char) {
     println()
 }
 
+data class Vector2dl(var x: Long = 0, var y: Long = 0) {
+    companion object {
+        val UP = Vector2dl(0, -1)
+        val DOWN = Vector2dl(0, 1)
+        val LEFT = Vector2dl(-1, -0)
+        val RIGHT = Vector2dl(1, 0)
+        val DIRECTIONS = setOf(UP, DOWN, LEFT, RIGHT)
+    }
+
+    operator fun plus(vector2d: Vector2dl) = Vector2dl(x + vector2d.x, y + vector2d.y)
+    operator fun minus(vector2d: Vector2dl) = Vector2dl(x - vector2d.x, y - vector2d.y)
+
+    operator fun times(scale:Long) = Vector2dl(x * scale, y * scale)
+
+    fun increment(vector2d: Vector2dl): Vector2dl {
+        this.x += vector2d.x
+        this.y += vector2d.y
+
+        return this
+    }
+    fun length() = max(abs(x), abs(y))
+
+}
+
 data class Vector2d(var x: Int = 0, var y: Int = 0) {
     companion object {
         val UP = Vector2d(0, -1)
@@ -51,6 +75,8 @@ data class Vector2d(var x: Int = 0, var y: Int = 0) {
 
     operator fun plus(vector2d: Vector2d) = Vector2d(x + vector2d.x, y + vector2d.y)
     operator fun minus(vector2d: Vector2d) = Vector2d(x - vector2d.x, y - vector2d.y)
+
+    operator fun times(scale:Int) = Vector2d(x * scale, y * scale)
 
     fun increment(vector2d: Vector2d): Vector2d {
         this.x += vector2d.x

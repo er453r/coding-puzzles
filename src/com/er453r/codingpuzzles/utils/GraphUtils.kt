@@ -1,5 +1,9 @@
 package com.er453r.codingpuzzles.utils
 
+import java.util.PriorityQueue
+
+data class Task<T>(val node:T, val cost:Int)
+
 fun <Node> aStar(
     start: Node,
     isEndNode: (Node) -> Boolean,
@@ -7,7 +11,7 @@ fun <Node> aStar(
     heuristic: (Node) -> Int = { 0 },
     neighbours: (Node) -> Collection<Node>,
 ): List<Node> {
-    val openSet = mutableSetOf(start)
+    val openSet = PriorityQueue<Task<Node>>{ a, b -> b.cost - a.cost }
     val gScores = mutableMapOf(start to 0)
     val fScores = mutableMapOf(start to heuristic(start))
     val cameFrom = mutableMapOf<Node, Node>()
@@ -25,12 +29,10 @@ fun <Node> aStar(
     }
 
     while (openSet.isNotEmpty()) {
-        val current = openSet.minBy { fScores[it]!! }
+        val current = openSet.poll().node
 
         if (isEndNode(current))
             return reconstructPath(cameFrom, current)
-
-        openSet.remove(current)
 
         for (neighbour in neighbours(current)) {
             val neighbourScore = gScores[current]!! + moveCost(current, neighbour)
@@ -40,8 +42,8 @@ fun <Node> aStar(
                 gScores[neighbour] = neighbourScore
                 fScores[neighbour] = neighbourScore + heuristic(neighbour)
 
-                if (neighbour !in openSet)
-                    openSet += neighbour
+                if (neighbour !in openSet.map { it.node })
+                    openSet += Task(neighbour, fScores[neighbour]!!)
             }
         }
     }

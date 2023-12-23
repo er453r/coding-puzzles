@@ -6,6 +6,7 @@ import com.er453r.codingpuzzles.utils.GridCell
 import com.er453r.codingpuzzles.utils.Vector2d
 import com.er453r.codingpuzzles.utils.memoize
 import org.junit.jupiter.api.DisplayName
+import kotlin.math.max
 
 @DisplayName("AoC 2023 - Day 23")
 class Day23 : AoCTestBase<Int>(
@@ -46,7 +47,37 @@ class Day23 : AoCTestBase<Int>(
         return longestHike(Hike(start, setOf(start)))
     }
 
-    override fun part1(input: List<String>) = hike(input) { grid, hike, candidate ->
+    fun hike2(input: List<String>, filterCandidates: (Grid<Char>, Hike, GridCell<Char>) -> Boolean): Int {
+        val grid = Grid(input.map { it.toCharArray().toList() })
+
+        val start = Vector2d(1, 0)
+        val finish = Vector2d(grid.width - 2, grid.height - 1)
+
+        var finished = 0
+        val paths = mutableListOf(Hike(start, setOf(start)))
+        val allowed = grid.data.flatten().filter { it.value != '#' }.map { it.position }.toSet()
+
+        while (paths.isNotEmpty()) {
+            val hike = paths.removeLast()
+
+            if (hike.lastStep == finish) {
+                finished = max(finished, hike.steps.size - 1)
+                continue
+            }
+
+            val candidates = hike.lastStep.neighboursCross()
+                .filter { it in allowed && it !in hike.steps }
+                .filter { filterCandidates(grid, hike, grid[it]) }
+
+            candidates.forEach { next ->
+                paths += Hike(next, hike.steps + next)
+            }
+        }
+
+        return finished
+    }
+
+    override fun part1(input: List<String>) = hike2(input) { grid, hike, candidate ->
         when (grid[hike.lastStep].value) {
             '^' -> candidate.position == hike.lastStep + Vector2d.UP
             '>' -> candidate.position == hike.lastStep + Vector2d.RIGHT
@@ -62,5 +93,5 @@ class Day23 : AoCTestBase<Int>(
         }
     }
 
-    override fun part2(input: List<String>) = hike(input) { _, _, _ -> true }
+    override fun part2(input: List<String>) = hike2(input) { _, _, _ -> true }
 }

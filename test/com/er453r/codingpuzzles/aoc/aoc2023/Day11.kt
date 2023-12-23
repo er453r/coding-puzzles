@@ -30,8 +30,8 @@ class Day11 : AoCTestBase<Long>(
             val cols = colsToExpand.count { galaxy.position.x > it }
             val rows = rowsToExpand.count { galaxy.position.y > it }
 
-            galaxy.position.x += cols * (times - 1)
-            galaxy.position.y += rows * (times - 1)
+//            galaxy.position.x += cols * (times - 1)
+//            galaxy.position.y += rows * (times - 1)
         }
 
         var sum = 0L

@@ -64,7 +64,7 @@ data class Vector2dl(var x: Long = 0, var y: Long = 0) {
 
 }
 
-data class Vector2d(var x: Int = 0, var y: Int = 0) {
+data class Vector2d(val x: Int = 0, val y: Int = 0) {
     companion object {
         val UP = Vector2d(0, -1)
         val DOWN = Vector2d(0, 1)
@@ -78,12 +78,7 @@ data class Vector2d(var x: Int = 0, var y: Int = 0) {
 
     operator fun times(scale:Int) = Vector2d(x * scale, y * scale)
 
-    fun increment(vector2d: Vector2d): Vector2d {
-        this.x += vector2d.x
-        this.y += vector2d.y
 
-        return this
-    }
 
     fun normalized() = Vector2d(if (x != 0) x / abs(x) else 0, if (y != 0) y / abs(y) else 0)
 

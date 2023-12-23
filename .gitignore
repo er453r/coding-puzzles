@@ -1,3 +1,4 @@
 target
 **/aoc/**/*.txt
 !**/aoc/**/*_test*.txt
+*.py

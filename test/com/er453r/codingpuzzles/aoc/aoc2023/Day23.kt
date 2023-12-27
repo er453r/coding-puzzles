@@ -4,7 +4,6 @@ import com.er453r.codingpuzzles.aoc.AoCTestBase
 import com.er453r.codingpuzzles.utils.Grid
 import com.er453r.codingpuzzles.utils.GridCell
 import com.er453r.codingpuzzles.utils.Vector2d
-import com.er453r.codingpuzzles.utils.memoize
 import org.junit.jupiter.api.DisplayName
 import kotlin.math.max
 
@@ -18,125 +17,93 @@ class Day23 : AoCTestBase<Int>(
     testTarget2 = 154,
     puzzleTarget2 = null,
 ) {
-    data class Hike(val lastStep: Vector2d, val steps: Set<Vector2d>)
+    data class Hike(val steps: List<Vector2d>, val allSteps: List<Vector2d>)
+    data class Edge(val from: Vector2d, val to: Vector2d, val length: Int)
+    data class HikeCollapsed(val steps: List<Edge>)
 
-    private fun hike(input: List<String>, filterCandidates: (Grid<Char>, Hike, GridCell<Char>) -> Boolean): Int {
+    private fun hike(input: List<String>, filterCandidates: (Grid<Char>, Vector2d, GridCell<Char>) -> Boolean): Int {
         val grid = Grid(input.map { it.toCharArray().toList() })
 
         val start = Vector2d(1, 0)
         val finish = Vector2d(grid.width - 2, grid.height - 1)
 
+        val paths = mutableListOf(Hike(listOf(start), listOf(start)))
         val allowed = grid.data.flatten().filter { it.value != '#' }.map { it.position }.toSet()
-
-        val longestHike = memoize<Hike, Int> { hike ->
-            if (hike.lastStep == finish) {
-                hike.steps.size - 1
-            } else {
-                val candidates = hike.lastStep.neighboursCross()
-                    .filter { it in allowed && it !in hike.steps }
-                    .filter { filterCandidates(grid, hike, grid[it]) }
-
-                if (candidates.isEmpty())
-                    -9999999
-                else
-                    candidates.maxOf { next ->
-                        this(Hike(next, hike.steps + next))
-                    }
-            }
-        }
-
-        return longestHike(Hike(start, setOf(start)))
-    }
-
-    private fun hike2(input: List<String>, filterCandidates: (Grid<Char>, Hike, GridCell<Char>) -> Boolean): Int {
-        val grid = Grid(input.map { it.toCharArray().toList() })
-
-        val start = Vector2d(1, 0)
-        val finish = Vector2d(grid.width - 2, grid.height - 1)
-
-        var finished = 0
-        val paths = mutableListOf(Hike(start, setOf(start)))
-        val allowed = grid.data.flatten().filter { it.value != '#' }.map { it.position }.toSet()
+        val map = mutableMapOf<Vector2d, MutableList<Edge>>()
+        val edges = mutableSetOf<Edge>()
 
         while (paths.isNotEmpty()) {
             val hike = paths.removeLast()
+            val steps = hike.steps
 
-            if (hike.lastStep == finish) {
-                finished = max(finished, hike.steps.size - 1)
+            if (steps.last() == finish) {
+                edges += Edge(steps.first(), steps.last(), steps.size)
+
                 continue
             }
 
-            val candidates = hike.lastStep.neighboursCross()
-                .filter { it in allowed && it !in hike.steps }
-                .filter { filterCandidates(grid, hike, grid[it]) }
+            val candidates = steps.last().neighboursCross()
+                .filter { it in allowed && it !in hike.allSteps }
+                .filter { filterCandidates(grid, steps.last(), grid[it]) }
 
-            candidates.forEach { next ->
-                paths += Hike(next, hike.steps + next)
+            if (candidates.size == 1)
+                paths += Hike(steps + candidates.first(), hike.allSteps + candidates.first())
+            else {
+                edges += Edge(steps.first(), steps.last(), steps.size)
+
+                candidates.forEach { next ->
+                    paths += Hike(listOf(steps.last(), next), hike.allSteps + next)
+                }
             }
         }
 
-        return finished
-    }
+        for (edge in edges)
+            map.getOrPut(edge.from) { mutableListOf() } += edge
 
-    private fun hike3(input: List<String>, filterCandidates: (Grid<Char>, Hike, GridCell<Char>) -> Boolean): Int {
-        val grid = Grid(input.map { it.toCharArray().toList() })
+        println("collapsed ${map.size}")
 
-        val start = Vector2d(1, 0)
-        val finish = Vector2d(grid.width - 2, grid.height - 1)
+//        map.entries.forEach { entry ->
+//            entry.value.forEach {
+//                println("\"${entry.key}\" -> \"${it.to}\"")
+//            }
+//        }
 
-        val paths = mutableListOf(Hike(start, setOf(start)))
-        val allowed = grid.data.flatten().filter { it.value != '#' }.map { it.position }.toSet()
+        var longest = 0
+        val stack = map[start]!!.map { HikeCollapsed(listOf(it)) }.toMutableList()
 
-        val cache = mutableMapOf<Hike, Int>()
+        while (stack.isNotEmpty()) {
+            val hike = stack.removeLast()
 
-        while (paths.isNotEmpty()) {
-            val hike = paths.removeLast()
+            if (hike.steps.last().to == finish) {
+                longest = max(longest, hike.steps.sumOf { it.length } - (hike.steps.size))
 
-            if (hike.lastStep == finish) {
-                cache[hike] = hike.steps.size - 1
                 continue
             }
 
-            val candidates = hike.lastStep.neighboursCross()
-                .filter { it in allowed && it !in hike.steps }
-                .filter { filterCandidates(grid, hike, grid[it]) }
+            val edge = hike.steps.last().to
 
-            if(candidates.isEmpty()){
-                cache[hike] = -1
-                continue
-            }
-
-            val otherHikes = candidates.map { next ->
-                Hike(next, hike.steps + next)
-            }
-
-            if(otherHikes.all { it in cache }) {
-                cache[hike] = otherHikes.maxOf { cache[it]!! }
-            }
-            else{
-                paths += hike
-                otherHikes.forEach { paths += it }
-            }
+            if(map.containsKey(edge))
+                stack += map[hike.steps.last().to]!!.map { HikeCollapsed(hike.steps + it) }
         }
 
-        return cache[Hike(start, setOf(start))]!!
+        return longest
     }
 
-    override fun part1(input: List<String>) = hike3(input) { grid, hike, candidate ->
-        when (grid[hike.lastStep].value) {
-            '^' -> candidate.position == hike.lastStep + Vector2d.UP
-            '>' -> candidate.position == hike.lastStep + Vector2d.RIGHT
-            'v' -> candidate.position == hike.lastStep + Vector2d.DOWN
-            '<' -> candidate.position == hike.lastStep + Vector2d.LEFT
+    override fun part1(input: List<String>) = hike(input) { grid, lastStep, candidate ->
+        when (grid[lastStep].value) {
+            '^' -> candidate.position == lastStep + Vector2d.UP
+            '>' -> candidate.position == lastStep + Vector2d.RIGHT
+            'v' -> candidate.position == lastStep + Vector2d.DOWN
+            '<' -> candidate.position == lastStep + Vector2d.LEFT
             else -> when (candidate.value) {
-                '^' -> candidate.position != hike.lastStep + Vector2d.DOWN
-                '>' -> candidate.position != hike.lastStep + Vector2d.LEFT
-                'v' -> candidate.position != hike.lastStep + Vector2d.UP
-                '<' -> candidate.position != hike.lastStep + Vector2d.DOWN
+                '^' -> candidate.position != lastStep + Vector2d.DOWN
+                '>' -> candidate.position != lastStep + Vector2d.LEFT
+                'v' -> candidate.position != lastStep + Vector2d.UP
+                '<' -> candidate.position != lastStep + Vector2d.DOWN
                 else -> true
             }
         }
     }
 
-    override fun part2(input: List<String>) = hike3(input) { _, _, _ -> true }
+    override fun part2(input: List<String>) = hike(input) { _, _, _ -> true }
 }

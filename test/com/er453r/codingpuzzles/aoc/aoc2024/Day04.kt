@@ -17,18 +17,12 @@ class Day04 : AoCTestBase<Int>(
     override fun part1(input: List<String>): Int {
         val grid = Grid(input.map { it.toCharArray().toList() })
         val target = "XMAS"
-        var counter = 0
 
-        grid.data.flatten().filter { it.value == target.first() }.forEach { candidate ->
-            Vector2d.DIRECTIONS_ALL.forEach { dir ->
-                val word = target.indices.map { candidate.position + dir.times(it) }.filter { grid.contains(it) }.map { grid[it].value }.joinToString("")
-
-                if(word == target)
-                    counter++
+        return grid.data.flatten().filter { it.value == target.first() }.flatMap { candidate ->
+            Vector2d.DIRECTIONS_ALL.map { dir ->
+                target.indices.map { candidate.position + dir.times(it) }.filter { grid.contains(it) }.map { grid[it].value }.joinToString("")
             }
-        }
-
-        return counter
+        }.count { it == target }
     }
 
     override fun part2(input: List<String>): Int {

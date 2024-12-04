@@ -21,7 +21,7 @@ class Day02 : AoCTestBase<Int>(
         if (!isSorted)
             return false
 
-        val diffs = (1..<level.size).map { abs(level[it] - level[it - 1]) }
+        val diffs = level.zipWithNext().map { abs(it.first - it.second) }
 
         return !diffs.any { it !in listOf(1, 2, 3) }
     }

@@ -71,6 +71,8 @@ data class Vector2d(val x: Int = 0, val y: Int = 0) {
         val LEFT = Vector2d(-1, -0)
         val RIGHT = Vector2d(1, 0)
         val DIRECTIONS = setOf(UP, DOWN, LEFT, RIGHT)
+        val DIRECTIONS_ALL = setOf(UP, UP + RIGHT, RIGHT, RIGHT + DOWN, DOWN, DOWN + LEFT, LEFT, LEFT + UP)
+        val DIRECTIONS_X = setOf(UP + RIGHT, RIGHT + DOWN, DOWN + LEFT, LEFT + UP)
     }
 
     operator fun plus(vector2d: Vector2d) = Vector2d(x + vector2d.x, y + vector2d.y)

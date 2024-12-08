@@ -11,7 +11,7 @@ class Day07 : AoCTestBase<Long>(
     testTarget1 = 3749,
     puzzleTarget1 = 2501605301465,
     testTarget2 = 11387,
-    puzzleTarget2 = null,
+    puzzleTarget2 = 44841372855953,
 ) {
     private fun calculate(target:Long, value:Long, values:List<Long>):Boolean{
         if(values.isEmpty())

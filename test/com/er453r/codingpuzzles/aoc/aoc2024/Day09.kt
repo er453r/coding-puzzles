@@ -12,9 +12,9 @@ class Day09 : AoCTestBase<Long>(
     testTarget2 = 2858,
     puzzleTarget2 = 6398065450842,
 ) {
-    override fun part1(input: List<String>): Long {
-        val dense = input.first().toCharArray().map { it.toString().toLong() }.toList()
+    data class Block(var position: Int, var size: Int)
 
+    private fun sparsify(dense: List<Int>): MutableList<Int> {
         var id = 0
         var isFileBlock = true
         val sparse = mutableListOf<Int>()
@@ -29,6 +29,12 @@ class Day09 : AoCTestBase<Long>(
 
             isFileBlock = !isFileBlock
         }
+
+        return sparse
+    }
+
+    override fun part1(input: List<String>): Long {
+        val sparse = sparsify(input.first().toCharArray().map { it.toString().toInt() }.toList())
 
         val emptyBlocks = sparse.indices.filter { sparse[it] == -1 }.toMutableList()
 
@@ -46,25 +52,25 @@ class Day09 : AoCTestBase<Long>(
             }
         }
 
-        return sparse.mapIndexed { index, i -> if(i != -1 ) index.toLong() * i else 0 }.sum()
+        return sparse.mapIndexed { index, i -> if (i != -1) index.toLong() * i else 0 }.sum()
     }
 
     override fun part2(input: List<String>): Long {
-        val dense = input.first().toCharArray().map { it.toString().toLong() }.toList()
+        val sparse = sparsify(input.first().toCharArray().map { it.toString().toInt() }.toList())
 
-        var id = 0
-        var isFileBlock = true
-        val sparse = mutableListOf<Int>()
+        val emptyList = mutableListOf<Block>()
+        var emptyBlock: Block? = null
 
-        dense.forEach { blockSize ->
-            (0..<blockSize).forEach { _ ->
-                sparse.add(if (isFileBlock) id else -1)
+        (0..<sparse.size).forEach { i ->
+            if (sparse[i] == -1) {
+                emptyBlock = if (emptyBlock == null) {
+                    Block(i, 1)
+                } else
+                    Block(emptyBlock!!.position, emptyBlock!!.size + 1)
+            } else {
+                emptyBlock?.let { emptyList.add(it) }
+                emptyBlock = null
             }
-
-            if (isFileBlock)
-                id++
-
-            isFileBlock = !isFileBlock
         }
 
         sparse.indices.reversed().forEach { index ->
@@ -74,34 +80,22 @@ class Day09 : AoCTestBase<Long>(
                 val blockSize = sparse.count { it == value }
                 val blockStart = sparse.indexOfFirst { it == value }
 
-                val emptyList = mutableListOf<Pair<Int, Int>>()
-                var emptyBlock:Pair<Int, Int>? = null
+                val firstEmptyIndex = emptyList.firstOrNull { it.size >= blockSize }
 
-                (0..<index).forEach { i ->
-                    if(sparse[i] == -1) {
-                        if(emptyBlock == null) {
-                            emptyBlock = Pair(i, 1)
-                        }
-                        else
-                            emptyBlock = Pair(emptyBlock!!.first, emptyBlock!!.second+1)
+                if (firstEmptyIndex != null && firstEmptyIndex.position < blockStart) {
+                    (firstEmptyIndex.position..<firstEmptyIndex.position + blockSize).forEach { i -> sparse[i] = value }
+                    (blockStart..<blockStart + blockSize).forEach { i -> sparse[i] = -1 }
+
+                    if (firstEmptyIndex.size == blockSize)
+                        emptyList.remove(firstEmptyIndex)
+                    else {
+                        firstEmptyIndex.position += blockSize
+                        firstEmptyIndex.size -= blockSize
                     }
-                    else{
-                        emptyBlock?.let { emptyList.add(it) }
-                        emptyBlock = null
-                    }
-                }
-
-                val firstEmptyIndex = emptyList.filter { it.second >= blockSize }.minByOrNull { it.first }
-
-                if (firstEmptyIndex != null && firstEmptyIndex.first < blockStart) {
-                    (firstEmptyIndex.first..< firstEmptyIndex.first + blockSize).forEach { i -> sparse[i] = value}
-                    (blockStart..< blockStart + blockSize).forEach { i -> sparse[i] = -1}
                 }
             }
         }
 
-//        println(sparse.map { if(it == -1) "." else it.toString() }.joinToString(""))
-
-        return sparse.mapIndexed { index, i -> if(i != -1 ) index.toLong() * i else 0 }.sum()
+        return sparse.mapIndexed { index, i -> if (i != -1) index.toLong() * i else 0 }.sum()
     }
 }

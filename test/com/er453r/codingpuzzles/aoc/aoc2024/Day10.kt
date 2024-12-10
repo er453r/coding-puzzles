@@ -15,32 +15,16 @@ class Day10 : AoCTestBase<Int>(
     testTarget2 = 81,
     puzzleTarget2 = 1384,
 ) {
-    private fun reaches9(cell: GridCell<Int>, grid: Grid<Int>): Set<Vector2d> {
+    private fun reaches9(cell: GridCell<Int>, grid: Grid<Int>): List<Vector2d> {
         if (cell.value == 9)
-            return setOf(cell.position)
+            return listOf(cell.position)
 
         val paths = cell.position.neighboursCross()
             .filter { grid.contains(it) }
             .map { grid[it] }
             .filter { it.value == cell.value + 1 }
 
-        val results = mutableSetOf<Vector2d>()
-
-        paths.forEach { results += reaches9(it, grid) }
-
-        return results
-    }
-
-    private fun reaches92(cell: GridCell<Int>, grid: Grid<Int>): Int {
-        if (cell.value == 9)
-            return 1
-
-        val paths = cell.position.neighboursCross()
-            .filter { grid.contains(it) }
-            .map { grid[it] }
-            .filter { it.value == cell.value + 1 }
-
-        return paths.sumOf { reaches92(it, grid) }
+        return paths.fold(emptyList()) { acc, next -> acc + reaches9(next, grid) }
     }
 
     override fun part1(input: List<String>): Int {
@@ -48,7 +32,7 @@ class Day10 : AoCTestBase<Int>(
 
         val starts = grid.data.flatten().filter { it.value == 0 }
 
-        return starts.sumOf { reaches9(it, grid).size }
+        return starts.sumOf { reaches9(it, grid).toSet().size }
     }
 
     override fun part2(input: List<String>): Int {
@@ -56,6 +40,6 @@ class Day10 : AoCTestBase<Int>(
 
         val starts = grid.data.flatten().filter { it.value == 0 }
 
-        return starts.sumOf { reaches92(it, grid) }
+        return starts.sumOf { reaches9(it, grid).size }
     }
 }

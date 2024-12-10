@@ -6,11 +6,14 @@ import kotlin.math.max
 data class GridCell<T>(
     var value: T,
     val position: Vector2d,
-)
+    val grid: Grid<T>,
+){
+    fun neighbours() = grid.getAll(position.neighboursCross())
+}
 
 class Grid<T>(data: List<List<T>>) {
     val data = data.mapIndexed { y, line ->
-        line.mapIndexed { x, value -> GridCell(value, Vector2d(x, y)) }
+        line.mapIndexed { x, value -> GridCell(value, Vector2d(x, y), this) }
     }
 
     val width = data.first().size

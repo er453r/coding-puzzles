@@ -15,31 +15,21 @@ class Day10 : AoCTestBase<Int>(
     testTarget2 = 81,
     puzzleTarget2 = 1384,
 ) {
-    private fun reaches9(cell: GridCell<Int>, grid: Grid<Int>): List<Vector2d> {
+    private fun reaches9(cell: GridCell<Int>): List<Vector2d> {
         if (cell.value == 9)
             return listOf(cell.position)
 
-        val paths = cell.position.neighboursCross()
-            .filter { grid.contains(it) }
-            .map { grid[it] }
+        return cell.neighbours()
             .filter { it.value == cell.value + 1 }
-
-        return paths.fold(emptyList()) { acc, next -> acc + reaches9(next, grid) }
+            .fold(emptyList()) { acc, next -> acc + reaches9(next) }
     }
 
-    override fun part1(input: List<String>): Int {
-        val grid = Grid(input.map { it.toCharArray().map { c -> c.toString().toInt() } })
-
-        val starts = grid.data.flatten().filter { it.value == 0 }
-
-        return starts.sumOf { reaches9(it, grid).toSet().size }
+    private fun solve(input: List<String>, count: (List<Vector2d>) -> Int): Int {
+        return Grid(input.map { it.toCharArray().map { c -> c.digitToInt() } }).data.flatten()
+            .filter { it.value == 0 }
+            .sumOf { count(reaches9(it)) }
     }
 
-    override fun part2(input: List<String>): Int {
-        val grid = Grid(input.map { it.toCharArray().map { c -> c.toString().toInt() } })
-
-        val starts = grid.data.flatten().filter { it.value == 0 }
-
-        return starts.sumOf { reaches9(it, grid).size }
-    }
+    override fun part1(input: List<String>) = solve(input) { it.toSet().size }
+    override fun part2(input: List<String>) = solve(input) { it.size }
 }

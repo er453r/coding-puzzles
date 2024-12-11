@@ -10,39 +10,40 @@ class Day11 : AoCTestBase<Long>(
     day = 11,
     testTarget1 = 55312,
     puzzleTarget1 = 199946,
-    testTarget2 = 199946,
-    puzzleTarget2 = 199946,
+    testTarget2 = 65601038650482,
+    puzzleTarget2 = 237994815702032,
 ) {
-    private fun blink(stones:List<Long>):List<Long>{
-        val result = mutableListOf<Long>()
+    data class Stone(val value:Long, val blinksLeft:Int)
 
-        stones.forEach { stone ->
-            when{
-                stone == 0L -> result.add(1)
-                stone.toString().length % 2 == 0 -> {
-                    result.add(stone.toString().substring(0, stone.toString().length / 2).toLong())
-                    result.add(stone.toString().substring(stone.toString().length / 2, stone.toString().length).toLong())
-                }
-                else -> result.add(stone * 2024)
-            }
+    private val cache = mutableMapOf<Stone, Long>()
+
+    private fun blink(stone:Stone):Long{
+        if(stone in cache)
+            return cache[stone]!!
+
+        if(stone.blinksLeft == 0)
+            return 1
+
+        val value = when{
+                stone.value == 0L -> blink(Stone(1, stone.blinksLeft - 1))
+                stone.value.toString().length % 2 == 0 -> blink(Stone(stone.value.toString().substring(0, stone.value.toString().length / 2).toLong(), stone.blinksLeft - 1)) + blink(Stone(stone.value.toString().substring(stone.value.toString().length / 2, stone.value.toString().length).toLong(), stone.blinksLeft - 1))
+                else -> blink(Stone(stone.value * 2024, stone.blinksLeft - 1))
         }
 
-        return result
+        cache[stone] = value
+
+        return value
     }
 
     override fun part1(input: List<String>): Long {
-        var stones = input.first().longs()
+        val stones = input.first().longs()
 
-        (1..25).forEach { _ -> stones = blink(stones)}
-
-        return stones.size.toLong()
+        return stones.sumOf { blink(Stone(it, 25)) }
     }
 
     override fun part2(input: List<String>): Long {
-        var stones = input.first().longs()
+        val stones = input.first().longs()
 
-        (1..75).forEach { _ -> stones = blink(stones)}
-
-        return stones.size.toLong()
+        return stones.sumOf { blink(Stone(it, 75)) }
     }
 }

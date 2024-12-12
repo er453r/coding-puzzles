@@ -9,6 +9,7 @@ data class GridCell<T>(
     val grid: Grid<T>,
 ){
     fun neighbours() = grid.getAll(position.neighboursCross())
+    fun neighbours8() = grid.getAll(position.neighbours8())
 }
 
 class Grid<T>(data: List<List<T>>) {
@@ -26,7 +27,7 @@ class Grid<T>(data: List<List<T>>) {
 
     operator fun contains(vector2d: Vector2d) = contains(vector2d.x, vector2d.y)
 
-    fun getAll(vectors: Set<Vector2d>) = vectors.filter { contains(it) }.map { get(it) }
+    fun getAll(vectors: Set<Vector2d>) = vectors.filter { contains(it) }.map { get(it) }.toSet()
 
     fun row(n:Int) = data[n]
     fun column(n:Int) = (0 until height).map { data[it][n] }
@@ -69,6 +70,7 @@ data class Vector2dl(var x: Long = 0, var y: Long = 0) {
 
 data class Vector2d(val x: Int = 0, val y: Int = 0) {
     companion object {
+        val ZERO = Vector2d(0, 0)
         val UP = Vector2d(0, -1)
         val DOWN = Vector2d(0, 1)
         val LEFT = Vector2d(-1, -0)

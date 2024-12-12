@@ -34,6 +34,20 @@ class Grid<T>(data: List<List<T>>) {
 
     fun rows() = data
     fun columns() = (0 until width).map { column(it) }
+
+    fun flood(start: GridCell<T>):Set<GridCell<T>>{
+        val plot = mutableSetOf(start)
+        val left = start.neighbours().filter { it.value == start.value }.toMutableSet()
+
+        while(left.isNotEmpty()){
+            val next = left.first()
+            left -= next
+            plot += next
+            left += next.neighbours().filter { it.value == next.value }.filter { it !in plot }
+        }
+
+        return plot
+    }
 }
 
 fun <T> Grid<T>.print(convert:(Vector2d)->Char) {

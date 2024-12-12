@@ -13,7 +13,7 @@ class Day12 : AoCTestBase<Int>(
     testTarget1 = 1930,
     puzzleTarget1 = 1433460,
     testTarget2 = 1206,
-    puzzleTarget2 = null,
+    puzzleTarget2 = 855082,
 ) {
     private fun plots(grid: Grid<Char>):List<Set<GridCell<Char>>>{
         val unassigned = grid.data.flatten().toMutableSet()
@@ -22,22 +22,10 @@ class Day12 : AoCTestBase<Int>(
 
         while(unassigned.isNotEmpty()) {
             val start = unassigned.first()
-            val plot = mutableSetOf(start)
+            val plot = grid.flood(start)
 
-            unassigned.remove(start)
-
-            val left = start.neighbours().filter { it in unassigned && it.value == start.value }.toMutableSet()
-
-            while(left.isNotEmpty()){
-                val next = left.first()
-                left.remove(next)
-                plot.add(next)
-                unassigned.remove(next)
-
-                left.addAll( next.neighbours().filter { it in unassigned && it.value == next.value })
-            }
-
-            plots.add(plot)
+            unassigned -= plot
+            plots += plot
         }
 
         return plots

@@ -17,12 +17,10 @@ class Day12 : AoCTestBase<Int>(
 ) {
     private fun plots(grid: Grid<Char>):List<Set<GridCell<Char>>>{
         val unassigned = grid.data.flatten().toMutableSet()
-
         val plots = mutableListOf<Set<GridCell<Char>>>()
 
         while(unassigned.isNotEmpty()) {
-            val start = unassigned.first()
-            val plot = grid.flood(start)
+            val plot = grid.flood(unassigned.first())
 
             unassigned -= plot
             plots += plot
@@ -48,10 +46,8 @@ class Day12 : AoCTestBase<Int>(
 
         return plots.sumOf { plot ->
             val plotPoints = plot.flatMap { cell -> listOf(Vector2d.ZERO, Vector2d.RIGHT, Vector2d.DOWN, Vector2d.RIGHT + Vector2d.DOWN ).map { cell.position + it } }
-
             val corners = mutableSetOf<Vector2d>()
             var cornerCount = 0
-
             val plotLetter = plot.first().value
 
             for(candidate in plotPoints) {
@@ -65,15 +61,12 @@ class Day12 : AoCTestBase<Int>(
                     cornerCount++
                 }
 
-                val diagonal1 = setOf(Vector2d.UP + Vector2d.LEFT, Vector2d.ZERO).map { candidate + it }.toSet()
-                val diagonal2 = setOf(Vector2d.UP, Vector2d.LEFT).map { candidate + it }.toSet()
+                val diagonals = listOf(
+                    setOf(Vector2d.UP + Vector2d.LEFT, Vector2d.ZERO).map { candidate + it }.toSet(),
+                    setOf(Vector2d.UP, Vector2d.LEFT).map { candidate + it }.toSet(),
+                )
 
-                if(occurrences == 2 && grid.getAll(diagonal1).count { it.value == plotLetter} == 2 ) {
-                    corners += candidate
-                    cornerCount += 2
-                }
-
-                if(occurrences == 2 && grid.getAll(diagonal2).count { it.value == plotLetter} == 2 ) {
+                if(occurrences == 2 && diagonals.any { grid.getAll(it).count { it.value == plotLetter} == 2 } ) {
                     corners += candidate
                     cornerCount += 2
                 }

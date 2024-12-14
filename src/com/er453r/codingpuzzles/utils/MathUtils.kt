@@ -38,3 +38,5 @@ fun Int.lcm(b: Int): Int {
 
     return maxLcm
 }
+
+fun Iterable<Int>.lcm() = this.reduce { acc, i -> acc.lcm(i) }

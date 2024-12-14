@@ -23,3 +23,18 @@ fun Long.lcm(b: Long): Long {
 
     return maxLcm
 }
+
+fun Int.lcm(b: Int): Int {
+    val larger = if (this > b) this else b
+    val maxLcm = this * b
+    var lcm = larger
+
+    while (lcm <= maxLcm) {
+        if (lcm % this == 0 && lcm % b == 0) {
+            return lcm
+        }
+        lcm += larger
+    }
+
+    return maxLcm
+}

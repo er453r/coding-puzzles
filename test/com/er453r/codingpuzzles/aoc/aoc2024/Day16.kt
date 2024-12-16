@@ -11,7 +11,7 @@ class Day16 : AoCTestBase<Int>(
     testTarget1 = 7036,
     puzzleTarget1 = 78428,
     testTarget2 = 45,
-    puzzleTarget2 = null,
+    puzzleTarget2 = 463,
 ) {
     data class Node(val cell: GridCell<Char>, val direction: Vector2d)
 

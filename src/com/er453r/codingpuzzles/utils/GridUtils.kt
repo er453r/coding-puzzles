@@ -8,6 +8,7 @@ data class GridCell<T>(
     val position: Vector2d,
     val grid: Grid<T>,
 ){
+    fun neighbour(direction:Vector2d) = grid[position + direction]
     fun neighbours() = grid.getAll(position.neighboursCross())
     fun neighbours8() = grid.getAll(position.neighbours8())
 }

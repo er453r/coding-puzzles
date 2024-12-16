@@ -26,28 +26,29 @@ class Day17 : AoCTestBase<Int>(
             Step(grid.get(0, 1), Vector2d.DOWN, 1),
         )
 
-        return startPoints.map { start ->
-            aStar(
-                start = start,
-                isEndNode = { it.cell == end },
-                moveCost = { _, b -> b.cell.value },
-                heuristic = { (end.position - it.cell.position).manhattan() },
-                neighbours = { step ->
-                    var directions = (Vector2d.DIRECTIONS - step.direction.negative()).toMutableSet()
-
-                    if (step.steps < min)
-                        directions = mutableSetOf(step.direction)
-
-                    if (step.steps == max)
-                        directions -= step.direction
-
-                    directions.filter { grid.contains(step.cell.position + it) }
-                        .map { direction ->
-                            Step(grid[step.cell.position + direction], direction, if (step.direction == direction) step.steps + 1 else 1)
-                        }
-                }
-            )
-        }.minOf { it.sumOf { c -> c.cell.value } }
+        return 0
+//        return startPoints.map { start ->
+//            aStar(
+//                start = start,
+//                isEndNode = { it.cell == end },
+//                moveCost = { _, b -> b.cell.value },
+//                heuristic = { (end.position - it.cell.position).manhattan() },
+//                neighbours = { step ->
+//                    var directions = (Vector2d.DIRECTIONS - step.direction.negative()).toMutableSet()
+//
+//                    if (step.steps < min)
+//                        directions = mutableSetOf(step.direction)
+//
+//                    if (step.steps == max)
+//                        directions -= step.direction
+//
+//                    directions.filter { grid.contains(step.cell.position + it) }
+//                        .map { direction ->
+//                            Step(grid[step.cell.position + direction], direction, if (step.direction == direction) step.steps + 1 else 1)
+//                        }
+//                }
+//            )
+//        }.minOf { it.sumOf { c -> c.cell.value } }
     }
 
     override fun part1(input: List<String>) = solve(input, 0, 3)

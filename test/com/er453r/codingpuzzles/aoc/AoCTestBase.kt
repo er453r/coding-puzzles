@@ -3,7 +3,6 @@ package com.er453r.codingpuzzles.aoc
 import com.er453r.codingpuzzles.utils.aocTest
 import org.junit.jupiter.api.*
 
-
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 abstract class AoCTestBase<T>(
     val year: Int,

@@ -13,7 +13,7 @@ class Day20 : AoCTestBase<Int>(
     testTarget1 = 44,
     puzzleTarget1 = 1332,
     testTarget2 = 285,
-    puzzleTarget2 = null,
+    puzzleTarget2 = 987695,
 ) {
     override fun part1(input: List<String>): Int {
         val grid = Grid(input.map { it.toCharArray().toList() })

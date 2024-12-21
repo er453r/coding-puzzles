@@ -18,6 +18,12 @@ fun <A, B, C, O> memoize(function: ((A, B, C) -> O).(A, B, C) -> O): (A, B, C) -
         override fun doInvoke(p: Params3<A, B, C>): O = function(this, p.a, p.b, p.c)
     }
 
+fun <A, B, C, D, O> memoize(function: ((A, B, C, D) -> O).(A, B, C, D) -> O): (A, B, C, D) -> O =
+    object : MemoizedFunction<Params4<A, B, C, D>, O>(), (A, B, C, D) -> O {
+        override fun invoke(a: A, b: B, c: C, d: D): O = invokeCached(Params4(a, b, c, d))
+        override fun doInvoke(p: Params4<A, B, C, D>): O = function(this, p.a, p.b, p.c, p.d)
+    }
+
 private abstract class MemoizedFunction<I, O> {
     private val cache = mutableMapOf<I, O>()
 
@@ -29,3 +35,4 @@ private abstract class MemoizedFunction<I, O> {
 private data class Params1<A>(val a: A)
 private data class Params2<A, B>(val a: A, val b: B)
 private data class Params3<A, B, C>(val a: A, val b: B, val c: C)
+private data class Params4<A, B, C, D>(val a: A, val b: B, val c: C, val d: D)

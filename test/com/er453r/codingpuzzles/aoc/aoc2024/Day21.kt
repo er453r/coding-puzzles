@@ -1,18 +1,20 @@
 package com.er453r.codingpuzzles.aoc.aoc2024
 
 import com.er453r.codingpuzzles.aoc.AoCTestBase
-import com.er453r.codingpuzzles.utils.*
+import com.er453r.codingpuzzles.utils.Vector2d
+import com.er453r.codingpuzzles.utils.ints
+import com.er453r.codingpuzzles.utils.memoize
 import org.junit.jupiter.api.DisplayName
 import kotlin.math.absoluteValue
 
 @DisplayName("AoC 2024 - Day 21")
-class Day21 : AoCTestBase<Int>(
+class Day21 : AoCTestBase<Long>(
     year = 2024,
     day = 21,
     testTarget1 = 126384,
     puzzleTarget1 = 109758,
-    testTarget2 = 2,
-    puzzleTarget2 = null,
+    testTarget2 = 154115708116294,
+    puzzleTarget2 = 134341709499296,
 ) {
     private val numericMap = mapOf(
         '7' to Vector2d(0, 0),
@@ -36,11 +38,11 @@ class Day21 : AoCTestBase<Int>(
         '>' to Vector2d(2, 1),
     )
 
-    private fun toPath(input:String, start:Vector2d):List<Vector2d> {
+    private fun toPath(input: String, start: Vector2d): List<Vector2d> {
         val path = mutableListOf(start)
 
         input.toCharArray().forEach {
-            path += path.last() + when(it){
+            path += path.last() + when (it) {
                 '<' -> Vector2d.LEFT
                 '>' -> Vector2d.RIGHT
                 '^' -> Vector2d.UP
@@ -52,7 +54,7 @@ class Day21 : AoCTestBase<Int>(
         return path
     }
 
-    private fun generic(input:String, map:Map<Char, Vector2d>, forbidden:Vector2d):String{
+    private fun generic(input: String, map: Map<Char, Vector2d>, forbidden: Vector2d): String {
         var previousKey = map['A']!!
 
         return input.toCharArray().joinToString("") { keyCode ->
@@ -61,60 +63,49 @@ class Day21 : AoCTestBase<Int>(
             val diff = nextKey - previousKey
             previousKey = nextKey
 
-            var sequence = (if(diff.x > 0) ">" else "<").repeat(diff.x.absoluteValue)
-            sequence += (if(diff.y > 0) "v" else "^").repeat(diff.y.absoluteValue)
+            var sequence = (if (diff.x > 0) ">" else "<").repeat(diff.x.absoluteValue)
+            sequence += (if (diff.y > 0) "v" else "^").repeat(diff.y.absoluteValue)
 
-            if(sequence.contains("<") && !sequence.startsWith("<"))
+            if (sequence.contains("<") && !sequence.startsWith("<"))
                 sequence = sequence.reversed()
 
-            if(sequence.contains(">") && !sequence.endsWith(">"))
+            if (sequence.contains(">") && !sequence.endsWith(">"))
                 sequence = sequence.reversed()
 
-            if(forbidden in toPath(sequence, startKey))
+            if (forbidden in toPath(sequence, startKey))
                 sequence = sequence.reversed()
 
             sequence + "A"
         }
     }
 
-    private fun step(singleStep:String, depth:Int):String{
+    private val memoizedStep = memoize<String, Int, Long> { singleStep, depth ->
         val path = generic(singleStep, directionalMap, Vector2d(0, 0))
 
-        if(depth == 0)
-           return path
+        if (depth == 0)
+            path.length.toLong()
+        else {
+            val parts = path.split("A").map { it + "A" }.toMutableList()
+            parts[parts.size - 1] = parts[parts.size - 1].dropLast(1)
 
-        val parts = path.split("A").map { it + "A" }.toMutableList()
-        parts[parts.size - 1] = parts[parts.size - 1].dropLast(1)
-
-        return parts.joinToString("") { step(it, depth - 1) }
+            parts.sumOf { this(it, depth - 1) }
+        }
     }
 
-    private fun numeric2directional(numeric:String) = generic(numeric, numericMap, Vector2d(0, 3))
+    private fun numeric2directional(numeric: String) = generic(numeric, numericMap, Vector2d(0, 3))
 
-    private fun directional2directional(directional:String, depth:Int):String{
+    private fun directional2directional(directional: String, depth: Int): Long {
         val parts = directional.split("A").map { it + "A" }.toMutableList()
         parts[parts.size - 1] = parts[parts.size - 1].dropLast(1)
 
-        return parts.joinToString("") { step(it, depth) }
+        return parts.sumOf { memoizedStep(it, depth) }
     }
 
-    override fun part1(input: List<String>):Int{
-        return input.sumOf {
-            var sequence = numeric2directional(it)
-
-            sequence = directional2directional(sequence, 3 - 2)
-
-            sequence.length * it.ints().first()
-        }
+    private fun solve(input: List<String>, depth: Int) = input.sumOf {
+        directional2directional(numeric2directional(it), depth - 1) * it.ints().first()
     }
 
-    override fun part2(input: List<String>):Int{
-        return input.sumOf {
-            var sequence = numeric2directional(it)
+    override fun part1(input: List<String>) = solve(input, 2)
 
-            sequence = directional2directional(sequence, 25)
-
-            sequence.length * it.ints().first()
-        }
-    }
+    override fun part2(input: List<String>) = solve(input, 25)
 }

@@ -76,13 +76,6 @@ class Day22 : AoCTestBase<Long>(
             }
         }
 
-        val max = map.values.max()
-
-        map.forEach { (list, price) ->
-            if (price == max)
-                println("max $max for $list")
-        }
-
         return map.values.max()
     }
 }

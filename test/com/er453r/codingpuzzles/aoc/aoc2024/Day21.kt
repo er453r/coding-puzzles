@@ -1,9 +1,7 @@
 package com.er453r.codingpuzzles.aoc.aoc2024
 
 import com.er453r.codingpuzzles.aoc.AoCTestBase
-import com.er453r.codingpuzzles.utils.Vector2d
-import com.er453r.codingpuzzles.utils.ints
-import com.er453r.codingpuzzles.utils.memoize
+import com.er453r.codingpuzzles.utils.*
 import org.junit.jupiter.api.DisplayName
 import kotlin.math.absoluteValue
 
@@ -38,11 +36,11 @@ class Day21 : AoCTestBase<Int>(
         '>' to Vector2d(2, 1),
     )
 
-    private fun toPath(input: String, start: Vector2d): List<Vector2d> {
+    private fun toPath(input:String, start:Vector2d):List<Vector2d> {
         val path = mutableListOf(start)
 
         input.toCharArray().forEach {
-            path += path.last() + when (it) {
+            path += path.last() + when(it){
                 '<' -> Vector2d.LEFT
                 '>' -> Vector2d.RIGHT
                 '^' -> Vector2d.UP
@@ -54,61 +52,69 @@ class Day21 : AoCTestBase<Int>(
         return path
     }
 
-    private val paths = memoize<Vector2d, Vector2d, Vector2d, Int, String> { from, to, forbidden, depth ->
-        if(depth == 0){
-            val diff = to - from
+    private fun generic(input:String, map:Map<Char, Vector2d>, forbidden:Vector2d):String{
+        var previousKey = map['A']!!
 
-            var sequence = (if (diff.x > 0) ">" else "<").repeat(diff.x.absoluteValue)
-            sequence += (if (diff.y > 0) "v" else "^").repeat(diff.y.absoluteValue)
+        return input.toCharArray().joinToString("") { keyCode ->
+            val startKey = previousKey
+            val nextKey = map[keyCode]!!
+            val diff = nextKey - previousKey
+            previousKey = nextKey
 
-            if (sequence.contains("<") && !sequence.startsWith("<"))
+            var sequence = (if(diff.x > 0) ">" else "<").repeat(diff.x.absoluteValue)
+            sequence += (if(diff.y > 0) "v" else "^").repeat(diff.y.absoluteValue)
+
+            if(sequence.contains("<") && !sequence.startsWith("<"))
                 sequence = sequence.reversed()
 
-            if (sequence.contains(">") && !sequence.endsWith(">"))
+            if(sequence.contains(">") && !sequence.endsWith(">"))
                 sequence = sequence.reversed()
 
-            if (forbidden in toPath(sequence, from))
+            if(forbidden in toPath(sequence, startKey))
                 sequence = sequence.reversed()
 
             sequence + "A"
         }
-        else{
-            val sequence = this(from, to, forbidden, depth - 1)
+    }
 
-            sequence
+    private fun step(singleStep:String, depth:Int):String{
+        val path = generic(singleStep, directionalMap, Vector2d(0, 0))
+
+        if(depth == 0)
+           return path
+
+        val parts = path.split("A").map { it + "A" }.toMutableList()
+        parts[parts.size - 1] = parts[parts.size - 1].dropLast(1)
+
+        return parts.joinToString("") { step(it, depth - 1) }
+    }
+
+    private fun numeric2directional(numeric:String) = generic(numeric, numericMap, Vector2d(0, 3))
+
+    private fun directional2directional(directional:String, depth:Int):String{
+        val parts = directional.split("A").map { it + "A" }.toMutableList()
+        parts[parts.size - 1] = parts[parts.size - 1].dropLast(1)
+
+        return parts.joinToString("") { step(it, depth) }
+    }
+
+    override fun part1(input: List<String>):Int{
+        return input.sumOf {
+            var sequence = numeric2directional(it)
+
+            sequence = directional2directional(sequence, 3 - 2)
+
+            sequence.length * it.ints().first()
         }
     }
 
-    private fun generic(input: String, map: Map<Char, Vector2d>, forbidden: Vector2d, depth:Int): String {
-        var previousKey = map['A']!!
+    override fun part2(input: List<String>):Int{
+        return input.sumOf {
+            var sequence = numeric2directional(it)
 
-        return input.toCharArray().joinToString("") { keyCode ->
-            val sequence = paths(previousKey, map[keyCode]!!, forbidden, depth)
+            sequence = directional2directional(sequence, 25)
 
-            previousKey = map[keyCode]!!
-
-            sequence
+            sequence.length * it.ints().first()
         }
     }
-
-
-    private fun numeric2directional(numeric: String) = generic(numeric, numericMap, Vector2d(0, 3), 0)
-
-    private fun directional2directional(directional: String, depth:Int) = generic(directional, directionalMap, Vector2d(0, 0), depth)
-
-    private fun solve(input: List<String>, times: Int) = input.sumOf {
-        var sequence = numeric2directional(it)
-
-        repeat(times) { iter ->
-            println("iter: $iter")
-
-            sequence = directional2directional(sequence, iter)
-        }
-
-        sequence.length * it.ints().first()
-    }
-
-    override fun part1(input: List<String>) = solve(input, 2)
-
-    override fun part2(input: List<String>) = solve(input, 25)
 }

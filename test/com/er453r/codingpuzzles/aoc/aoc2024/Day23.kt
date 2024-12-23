@@ -10,31 +10,9 @@ class Day23 : AoCTestBase<String>(
     testTarget1 = "7",
     puzzleTarget1 = "1284",
     testTarget2 = "co,de,ka,ta",
-    puzzleTarget2 = null,
+    puzzleTarget2 = "bv,cm,dk,em,gs,jv,ml,oy,qj,ri,uo,xk,yw",
 ) {
-    override fun part1(input: List<String>): String {
-        val sets = mutableMapOf<String, Set<String>>()
-        val pairs = mutableListOf<Pair<String, String>>()
-
-        input.map { it.split("-") }.forEach { (a, b) ->
-            pairs += Pair(a, b)
-
-            sets[a] = sets.getOrDefault(a, emptySet()) + b
-            sets[b] = sets.getOrDefault(b, emptySet()) + a
-        }
-
-        val triples = mutableSetOf<Set<String>>()
-
-        pairs.forEach { (a, b) ->
-            val common = sets[a]!!.intersect(sets[b]!!)
-
-            common.forEach { c -> triples += setOf(c, a, b) }
-        }
-
-        return triples.count { s -> s.any { it.startsWith("t") } }.toString()
-    }
-
-    override fun part2(input: List<String>): String {
+    private fun expand(input: List<String>, loop: Boolean): Set<Set<String>> {
         val sets = mutableMapOf<String, Set<String>>()
         var nets = mutableSetOf<Set<String>>()
 
@@ -45,9 +23,8 @@ class Day23 : AoCTestBase<String>(
             sets[b] = sets.getOrDefault(b, emptySet()) + a
         }
 
-
         while (true) {
-            val expanded = nets.toMutableSet()
+            val expanded = mutableSetOf<Set<String>>()
 
             nets.forEach { net ->
                 val ordered = net.sorted()
@@ -59,12 +36,19 @@ class Day23 : AoCTestBase<String>(
                 common.forEach { c -> expanded += net + c }
             }
 
-            if (expanded.size == nets.size)
+            if (expanded.size == 0)
                 break
             else
                 nets = expanded
+
+            if(!loop)
+                break
         }
 
-        return nets.maxBy { it.size }.sortedBy { it }.joinToString(",")
+        return nets
     }
+
+    override fun part1(input: List<String>) = expand(input, loop = false).count { s -> s.any { it.startsWith("t") } }.toString()
+
+    override fun part2(input: List<String>) = expand(input, loop = true).maxBy { it.size }.sortedBy { it }.joinToString(",")
 }

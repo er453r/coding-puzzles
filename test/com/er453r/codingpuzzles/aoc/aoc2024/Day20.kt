@@ -2,7 +2,6 @@ package com.er453r.codingpuzzles.aoc.aoc2024
 
 import com.er453r.codingpuzzles.aoc.AoCTestBase
 import com.er453r.codingpuzzles.utils.Grid
-import com.er453r.codingpuzzles.utils.GridCell
 import com.er453r.codingpuzzles.utils.aStar
 import org.junit.jupiter.api.DisplayName
 
@@ -15,7 +14,7 @@ class Day20 : AoCTestBase<Int>(
     testTarget2 = 285,
     puzzleTarget2 = 987695,
 ) {
-    private fun solve(input: List<String>, cheatsAllowed:Int, testCondition:Int): Int {
+    private fun solve(input: List<String>, cheatsAllowed: Int, testCondition: Int): Int {
         val grid = Grid(input.map { it.toCharArray().toList() })
         val start = grid.data.flatten().first { it.value == 'S' }
         val end = grid.data.flatten().first { it.value == 'E' }
@@ -28,26 +27,17 @@ class Day20 : AoCTestBase<Int>(
         )
 
         val path = basePath.first.dropLast(1)
-        val nonWall = grid.data.flatten().filter { it.value != '#' }
+        val pathRest = basePath.first.mapIndexed { index, cell -> cell to path.size - index }.toMap()
+        val nonWall = basePath.first.filter { it.value != '#' }
 
         var counter = 0
-
-        val cache = mutableMapOf<GridCell<Char>, Int>()
 
         path.forEachIndexed { cheatStartIndex, cheatStart ->
             nonWall.filter { it != cheatStart }
                 .map { Pair(it, (it.position - cheatStart.position).manhattan()) }
                 .filter { (_, manhattan) -> manhattan < cheatsAllowed + 1 }
                 .forEach { (cheatEnd, manhattan) ->
-                    val rest = cache.getOrPut(cheatEnd){
-                        aStar(
-                            start = cheatEnd,
-                            isEndNode = { it == end },
-                            neighbours = { cell -> cell.neighbours().filter { it.value != '#' } },
-                        ).second
-                    }
-
-                    val finalPathLength = cheatStartIndex + manhattan + rest
+                    val finalPathLength = cheatStartIndex + manhattan + pathRest[cheatEnd]!!
                     val saved = basePath.second - finalPathLength
 
                     if ((test && saved > testCondition) || saved >= 100)

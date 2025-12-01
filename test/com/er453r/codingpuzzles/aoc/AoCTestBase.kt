@@ -16,6 +16,20 @@ abstract class AoCTestBase<T>(
     abstract fun part2(input: List<String>): T
 
     @Test
+    @Order(0)
+    @DisplayName("Warmup")
+    fun part0test() {
+        aocTest(
+            year = year,
+            day = day,
+            part = 0,
+            logic = ::part1,
+            target = testTarget1,
+            useTestInput = true,
+        )
+    }
+
+    @Test
     @Order(1)
     @DisplayName("Part 1 - test data")
     fun part1test() {

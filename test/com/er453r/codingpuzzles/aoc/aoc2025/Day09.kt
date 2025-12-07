@@ -1,15 +1,13 @@
 package com.er453r.codingpuzzles.aoc.aoc2025
 
 import com.er453r.codingpuzzles.aoc.AoCTestBase
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 
 // this is a template for this year
-@DisplayName("AoC 2025 - Day 00")
-@Disabled
-class Day00 : AoCTestBase<Int>(
+@DisplayName("AoC 2025 - Day 09")
+class Day09 : AoCTestBase<Int>(
     year = 2025,
-    day = 0,
+    day = 9,
     testTarget1 = null,
     puzzleTarget1 = null,
     testTarget2 = null,

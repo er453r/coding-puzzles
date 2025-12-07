@@ -24,6 +24,8 @@ fun Long.lcm(b: Long): Long {
     return maxLcm
 }
 
+fun Iterable<Long>.product() = fold(1L) { a, b -> a * b }
+
 fun Int.lcm(b: Int): Int {
     val larger = if (this > b) this else b
     val maxLcm = this * b

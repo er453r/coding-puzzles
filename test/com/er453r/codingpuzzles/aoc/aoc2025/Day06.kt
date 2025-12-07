@@ -3,11 +3,9 @@ package com.er453r.codingpuzzles.aoc.aoc2025
 import com.er453r.codingpuzzles.aoc.AoCTestBase
 import com.er453r.codingpuzzles.utils.product
 import com.er453r.codingpuzzles.utils.splitColumns
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 
 @DisplayName("AoC 2025 - Day 06")
-@Disabled
 class Day06 : AoCTestBase<Long>(
     year = 2025,
     day = 6,

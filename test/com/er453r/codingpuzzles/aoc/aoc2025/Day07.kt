@@ -4,11 +4,9 @@ import com.er453r.codingpuzzles.aoc.AoCTestBase
 import com.er453r.codingpuzzles.utils.Grid
 import com.er453r.codingpuzzles.utils.Vector2d
 import com.er453r.codingpuzzles.utils.memoize
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 
 @DisplayName("AoC 2025 - Day 07")
-@Disabled
 class Day07 : AoCTestBase<Long>(
     year = 2025,
     day = 7,

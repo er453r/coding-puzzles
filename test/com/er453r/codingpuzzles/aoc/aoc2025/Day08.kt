@@ -1,7 +1,6 @@
 package com.er453r.codingpuzzles.aoc.aoc2025
 
 import com.er453r.codingpuzzles.aoc.AoCTestBase
-import com.er453r.codingpuzzles.utils.Vector2d
 import com.er453r.codingpuzzles.utils.Vector3d
 import com.er453r.codingpuzzles.utils.ints
 import com.er453r.codingpuzzles.utils.product
@@ -16,15 +15,14 @@ class Day08 : AoCTestBase<Long>(
     testTarget2 = 25272,
     puzzleTarget2 = 2573952864,
 ) {
-    // 1000 too low, 23940 too low
     override fun part1(input: List<String>): Long {
         val points = input.map { it.ints() }.map { Vector3d(it[0], it[1], it[2]) }.toList()
         val point2Circuit = points.associateWith { mutableSetOf(it) }.toMutableMap()
         val limit = if (points.size < 30) 10 else 1000
         val allPairs = mutableListOf<Pair<Vector3d, Vector3d>>()
 
-        for(n in points.indices) {
-            for(i in n+1 until points.size) {
+        for (n in points.indices) {
+            for (i in n + 1 until points.size) {
                 allPairs.add(Pair(points[n], points[i]))
             }
         }
@@ -35,7 +33,7 @@ class Day08 : AoCTestBase<Long>(
             val circuit1 = point2Circuit[pair.first]!!
             val circuit2 = point2Circuit[pair.second]!!
 
-            if(circuit1 != circuit2){
+            if (circuit1 != circuit2) {
                 circuit1.addAll(circuit2)
 
                 circuit2.forEach { point2Circuit[it] = circuit1 }
@@ -52,25 +50,25 @@ class Day08 : AoCTestBase<Long>(
         val point2Circuit = points.associateWith { mutableSetOf(it) }.toMutableMap()
         val allPairs = mutableListOf<Pair<Vector3d, Vector3d>>()
 
-        for(n in points.indices) {
-            for(i in n+1 until points.size) {
+        for (n in points.indices) {
+            for (i in n + 1 until points.size) {
                 allPairs.add(Pair(points[n], points[i]))
             }
         }
 
         allPairs.sortBy { (it.first - it.second).length2() }
 
-        for(pair in allPairs) {
+        for (pair in allPairs) {
             val circuit1 = point2Circuit[pair.first]!!
             val circuit2 = point2Circuit[pair.second]!!
 
-            if(circuit1 != circuit2){
-                circuit1.addAll(circuit2)
+            if (circuit1 != circuit2) {
+                circuit1 += circuit2
 
                 circuit2.forEach { point2Circuit[it] = circuit1 }
             }
 
-            if(point2Circuit.values.toSet().size == 1)
+            if (point2Circuit.values.toSet().size == 1)
                 return pair.first.x.toLong() * pair.second.x.toLong()
         }
 

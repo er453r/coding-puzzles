@@ -66,7 +66,6 @@ package com.er453r.codingpuzzles.aoc.aoc$year
 import com.er453r.codingpuzzles.aoc.AoCTestBase
 import org.junit.jupiter.api.DisplayName
 
-// this is a template for this year
 @DisplayName("AoC $year - Day $dayStr")
 class Day$dayStr : AoCTestBase<Int>(
     year = $year,

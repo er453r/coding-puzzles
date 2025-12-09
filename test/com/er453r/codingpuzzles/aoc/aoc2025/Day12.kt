@@ -3,7 +3,6 @@ package com.er453r.codingpuzzles.aoc.aoc2025
 import com.er453r.codingpuzzles.aoc.AoCTestBase
 import org.junit.jupiter.api.DisplayName
 
-// this is a template for this year
 @DisplayName("AoC 2025 - Day 12")
 class Day12 : AoCTestBase<Int>(
     year = 2025,

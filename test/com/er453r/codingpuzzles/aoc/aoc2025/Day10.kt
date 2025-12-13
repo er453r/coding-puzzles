@@ -3,6 +3,7 @@ package com.er453r.codingpuzzles.aoc.aoc2025
 import com.er453r.codingpuzzles.aoc.AoCTestBase
 import com.er453r.codingpuzzles.utils.aStar
 import com.er453r.codingpuzzles.utils.ints
+import com.er453r.codingpuzzles.utils.memoize
 import org.junit.jupiter.api.DisplayName
 
 @DisplayName("AoC 2025 - Day 10")
@@ -44,33 +45,21 @@ class Day10 : AoCTestBase<Int>(
     }
 
     fun solve(startState: List<Int>, zeroedIndex: Int, buttons: Set<Set<Int>>): Set<List<Int>> {
-        val queue = ArrayDeque(listOf(startState.toList()))
-        val seen = mutableSetOf<List<Int>>(startState.toList())
-        val reachedStates = mutableSetOf<List<Int>>()
-
-        while (queue.isNotEmpty()) {
-            val current = queue.removeFirst() // BFS; use removeLast() for DFS-like
-
-            if (current[zeroedIndex] == 0) {
-                reachedStates.add(current)
-                continue
-            }
-
-            for (button in buttons) {
-                val newState = current.toMutableList().also { s ->
-                    button.forEach { s[it]-- }
-                }
-
-                if (newState.any { it < 0 }) continue
-
-                val frozen = newState.toList()
-                if (seen.add(frozen)) {
-                    queue.addLast(frozen)
-                }
+        val count = memoize<List<Int>, Set<List<Int>>> { state ->
+            if (state.any { it < 0 })
+                setOf()
+            else if (state[zeroedIndex] == 0)
+                setOf(state)
+            else {
+                buttons.map { button ->
+                    state.toMutableList().also { s ->
+                        button.forEach { s[it]-- }
+                    }
+                }.flatMap { this(it) }.toSet()
             }
         }
 
-        return reachedStates
+        return count(startState)
     }
 
     data class State(
@@ -105,7 +94,7 @@ class Day10 : AoCTestBase<Int>(
                     button.forEach { slot -> buttonCountForState[slot] = (buttonCountForState[slot] ?: 0) + 1 }
                 }
 
-                try{
+                try {
                     val minState = buttonCountForState.entries.minBy { it.value }.key
                     val buttonForMinState = validButtons.filter { it.contains(minState) }.toSet()
 
@@ -124,8 +113,8 @@ class Day10 : AoCTestBase<Int>(
                         }
 
                     statesReached.forEach { statesQueue.add(State(it, currentState.presses + presses)) }
+                } catch (e: NoSuchElementException) {
                 }
-                catch (e: NoSuchElementException) {}
             }
 
             println("Line ${lineIndex++} solved after $count presses")

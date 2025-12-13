@@ -4,7 +4,6 @@ import com.er453r.codingpuzzles.aoc.AoCTestBase
 import com.er453r.codingpuzzles.utils.aStar
 import com.er453r.codingpuzzles.utils.ints
 import org.junit.jupiter.api.DisplayName
-import kotlin.math.min
 
 @DisplayName("AoC 2025 - Day 10")
 class Day10 : AoCTestBase<Int>(
@@ -44,6 +43,41 @@ class Day10 : AoCTestBase<Int>(
         }
     }
 
+    fun solve(startState: List<Int>, zeroedIndex: Int, buttons: Set<Set<Int>>): Set<List<Int>> {
+        val queue = ArrayDeque(listOf(startState.toList()))
+        val seen = mutableSetOf<List<Int>>(startState.toList())
+        val reachedStates = mutableSetOf<List<Int>>()
+
+        while (queue.isNotEmpty()) {
+            val current = queue.removeFirst() // BFS; use removeLast() for DFS-like
+
+            if (current[zeroedIndex] == 0) {
+                reachedStates.add(current)
+                continue
+            }
+
+            for (button in buttons) {
+                val newState = current.toMutableList().also { s ->
+                    button.forEach { s[it]-- }
+                }
+
+                if (newState.any { it < 0 }) continue
+
+                val frozen = newState.toList()
+                if (seen.add(frozen)) {
+                    queue.addLast(frozen)
+                }
+            }
+        }
+
+        return reachedStates
+    }
+
+    data class State(
+        val slots: List<Int>,
+        val presses: Int,
+    )
+
     override fun part2(input: List<String>): Int {
         val line = input.map {
             val parts = it.split(" ")
@@ -54,38 +88,49 @@ class Day10 : AoCTestBase<Int>(
             Pair(state, buttons)
         }
 
+        var lineIndex = 0
+
         return line.sumOf { (endState, buttons) ->
-            val end = endState.map { 0 }
+            val statesQueue = mutableListOf(State(endState, 0))
+            var count = 0
 
-            val presses = aStar(
-                start = endState,
-                isEndNode = { it == end },
-                neighbours = { state ->
-                    val zeros = state.indices.filter { state[it] == 0 }.toSet()
+            loop@ while (statesQueue.isNotEmpty()) {
+                val currentState = statesQueue.removeFirst()
 
-                    buttons.filter { it.intersect(zeros).isEmpty() }.map { button ->
-                        val clone = state.toMutableList()
+                val zeroStates = currentState.slots.indices.filter { currentState.slots[it] == 0 }.toSet()
+                val validButtons = buttons.filter { it.intersect(zeroStates).isEmpty() }.toSet()
+                val buttonCountForState = mutableMapOf<Int, Int>()
 
-                        button.forEach { clone[it]-- }
-
-                        clone
-                    }
-                },
-                moveCost = { from, to ->
-                    if(to == end)
-                        1
-                    else{
-                        val minSlot = to.indices.filter { to[it] != 0 }.minBy { to[it] }
-                        val slots = from.indices.filter { from[it] - to[it] > 0 }.toSet()
-
-                        if(slots.contains(minSlot)) 1 else 100
-                    }
+                validButtons.forEach { button ->
+                    button.forEach { slot -> buttonCountForState[slot] = (buttonCountForState[slot] ?: 0) + 1 }
                 }
-            )
 
-            println("derp")
+                try{
+                    val minState = buttonCountForState.entries.minBy { it.value }.key
+                    val buttonForMinState = validButtons.filter { it.contains(minState) }.toSet()
 
-            presses.first.size - 1
+//                println("Trying to transition from $currentState with $minState with buttons $buttonForMinState")
+
+                    val statesReached = solve(currentState.slots.toList(), minState, buttonForMinState)
+
+                    val presses = currentState.slots[minState]
+
+//                println("Reached ${statesReached.size} desired states after $presses presses")
+
+                    for (desiredState in statesReached)
+                        if (desiredState.all { it == 0 }) {
+                            count = currentState.presses + presses
+                            break@loop
+                        }
+
+                    statesReached.forEach { statesQueue.add(State(it, currentState.presses + presses)) }
+                }
+                catch (e: NoSuchElementException) {}
+            }
+
+            println("Line ${lineIndex++} solved after $count presses")
+
+            count
         }
     }
 }
